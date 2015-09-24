@@ -62,7 +62,7 @@ int main (void)
 {
     WebcamController *controller = new (WebcamController);
 
-    namedWindow ("output", CV_GUI_EXPANDED);
+    namedWindow ("output", CV_WINDOW_AUTOSIZE | CV_GUI_EXPANDED);
     setMouseCallback ("output", onMouse, 0);
 
     while (true)
