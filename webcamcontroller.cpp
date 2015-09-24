@@ -3,50 +3,10 @@
 using namespace cv;
 using namespace std;
 
-static string getDateTime (void)
-{
-    time_t rawtime;
-    tm *timeinfo;
-    char buffer[20];
-
-    time(&rawtime);
-    timeinfo = localtime(&rawtime);
-    strftime (buffer, sizeof(buffer), "%F-%T", timeinfo);
-
-    string ret = buffer;
-    return ret;
-}
-
 WebcamController::WebcamController()
 {
     this->cap = VideoCapture (0);
     this->paused = false;
-}
-
-void WebcamController::saveImage (void)
-{
-    Mat image = this->getFrame ();
-    Mat edges = this->getEdges ();
-
-    // Save as a PNG with speed parameter of 9
-    vector<int> compression_params;
-    compression_params.push_back(CV_IMWRITE_PNG_COMPRESSION);
-    compression_params.push_back(9);
-
-    string dateTime = getDateTime ();
-
-    // standard
-    string filename = "output-";
-    filename.append (dateTime);
-    filename.append (".png");
-    imwrite (filename, image);
-
-    // edges
-    string edgename = "edges-";
-    edgename.append (dateTime);
-    edgename.append (".png");
-    imwrite (edgename, edges);
-;
 }
 
 bool WebcamController::getPaused (void) const

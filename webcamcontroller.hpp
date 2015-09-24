@@ -11,7 +11,6 @@ class WebcamController
 public:
   WebcamController ();
 
-  void saveImage (void);
   bool getPaused (void) const;
   void setPaused (bool paused);
   Mat getFrame (void);

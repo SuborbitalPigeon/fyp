@@ -6,8 +6,8 @@ int main (void)
 {
     WebcamController *controller = new (WebcamController);
 
-    namedWindow ("output", 1);
-    namedWindow ("edges", 2);
+    namedWindow ("output", CV_GUI_EXPANDED);
+    namedWindow ("edges", CV_GUI_EXPANDED);
 
     while (true)
     {
@@ -23,9 +23,6 @@ int main (void)
         int c = waitKey (1000 / FPS);
         switch ((char) c)
         {
-    	    case 's':
-	            controller->saveImage ();
-	            break;
             case 'p':
                 bool isPaused = controller->getPaused ();
                 controller->setPaused (!isPaused);
