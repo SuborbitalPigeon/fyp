@@ -14,7 +14,6 @@ public:
   bool getPaused (void) const;
   void setPaused (bool paused);
   Mat getFrame (void);
-  Mat getEdges (void);
 
 private:
   VideoCapture cap;

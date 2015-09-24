@@ -36,13 +36,3 @@ Mat WebcamController::getFrame (void)
         this->savedFrame = ret;
         return ret;
 }
-
-Mat WebcamController::getEdges (void)
-{
-    Mat frame = this->getFrame ();
-    Mat edges;
-
-    cvtColor (frame, edges, COLOR_BGR2GRAY);
-    Canny (edges, edges, 10, 30, 3, 5);
-    return edges;
-}
