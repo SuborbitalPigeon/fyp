@@ -2,11 +2,12 @@ export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig
 CXXFLAGS = -std=gnu++11 -Wall -Wextra -g -Og `pkg-config --cflags opencv`
 LDLIBS =  `pkg-config --libs opencv`
 
-all: webcam
+all: testwebcam
 
-webcam: webcam.cpp
+testwebcam: webcamcontroller.o testwebcam.o
+	$(CXX) $(LDLIBS) -o testwebcam webcamcontroller.o testwebcam.o
 
-.PHONY: clean
+.PHONY: all clean
 
 clean:
-	$(RM) webcam
+	$(RM) testwebcam *.o

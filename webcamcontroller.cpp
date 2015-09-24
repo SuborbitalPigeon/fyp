@@ -1,9 +1,7 @@
-#include "webcam.hpp"
+#include "webcamcontroller.hpp"
 
 using namespace cv;
 using namespace std;
-
-static const int FPS = 10;
 
 static string getDateTime (void)
 {
@@ -87,39 +85,4 @@ Mat WebcamController::getEdges (void)
     cvtColor (frame, edges, COLOR_BGR2GRAY);
     Canny (edges, edges, 10, 30, 3, 5);
     return edges;
-}
-
-
-int main (void)
-{
-    WebcamController *controller = new (WebcamController);
-
-    namedWindow ("output", 1);
-    namedWindow ("edges", 2);
-
-    while (true)
-    {
-        Mat frame;
-        Mat edges;
-
-        frame = controller->getFrame ();
-        edges = controller->getEdges ();
-
-        imshow ("output", frame);
-        imshow ("edges", edges);
-
-        int c = waitKey (1000 / FPS);
-        switch ((char) c)
-        {
-    	    case 's':
-	            controller->saveImage ();
-	            break;
-            case 'p':
-                bool isPaused = controller->getPaused ();
-                controller->setPaused (!isPaused);
-                break;
-        }
-    }
-
-    return 0;
 }
