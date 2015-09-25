@@ -36,3 +36,10 @@ Mat WebcamController::getFrame (void)
         this->savedFrame = ret;
         return ret;
 }
+
+Mat WebcamController::getCropped (int x, int y, int width, int height)
+{
+    Rect roi = Rect (x, y, width, height);
+    Mat frame = this->getFrame ();
+    return frame (roi);
+}

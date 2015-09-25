@@ -14,6 +14,10 @@ public:
   bool getPaused (void) const;
   void setPaused (bool paused);
   Mat getFrame (void);
+  Mat getCropped (int x,
+                  int y,
+                  int width,
+                  int height);
 
 private:
   VideoCapture cap;

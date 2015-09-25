@@ -2,26 +2,14 @@
 
 #include "webcamcontroller.hpp"
 
-static Mat frame;
 static const int FPS = 10;
+static WebcamController *controller;
 
 static string locationStr (int x, int y)
 {
     stringstream ss;
     ss << "x = " << x << ", y = " << y;
     return ss.str ();
-}
-
-static void cropDisplay (int x, int y, int width, int height)
-{
-    int centrex = x + width / 2;
-    int centrey = y + height / 2;
-    Rect roi = Rect (x, y, width, height);
-    Mat cropped = frame (roi);
-
-    namedWindow ("crop", CV_WINDOW_AUTOSIZE);
-    displayStatusBar ("crop", "Centre = " + locationStr (centrex, centrey), 0);
-    imshow ("crop", cropped);
 }
 
 static void onMouse (int event, int x, int y, int flags, void *userdata)
@@ -54,7 +42,14 @@ static void onMouse (int event, int x, int y, int flags, void *userdata)
                 bottom = y;
                 displayStatusBar ("output", "DEBUG: Button pressed at " + location, 1000);
                 // TODO manage starting crop from other corners
-                cropDisplay (left, top, right - left, bottom - top);
+                Mat crop = controller->getCropped (left, top, right - left, bottom - top);
+                int centrex = (right - left) / 2;
+                int centrey = (bottom - top) / 2;
+
+                namedWindow ("crop", CV_WINDOW_AUTOSIZE);
+                displayStatusBar ("crop", "Centre = " + locationStr (centrex, centrey), 0);
+                imshow ("crop", crop);
+
             }
             selecting = !selecting;
         }
@@ -63,7 +58,8 @@ static void onMouse (int event, int x, int y, int flags, void *userdata)
 
 int main (void)
 {
-    WebcamController *controller = new (WebcamController);
+    Mat frame;
+    controller = new (WebcamController);
 
     namedWindow ("output", CV_WINDOW_AUTOSIZE | CV_GUI_EXPANDED);
     setMouseCallback ("output", onMouse, 0);
