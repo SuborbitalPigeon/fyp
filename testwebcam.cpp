@@ -5,7 +5,7 @@
 static Mat frame;
 static const int FPS = 10;
 
-static string getMouseLocation (int x, int y)
+static string locationStr (int x, int y)
 {
     stringstream ss;
     ss << "x = " << x << ", y = " << y;
@@ -14,16 +14,19 @@ static string getMouseLocation (int x, int y)
 
 static void cropDisplay (int x, int y, int width, int height)
 {
+    int centrex = x + width / 2;
+    int centrey = y + height / 2;
     Rect roi = Rect (x, y, width, height);
     Mat cropped = frame (roi);
 
     namedWindow ("crop", CV_WINDOW_AUTOSIZE);
+    displayStatusBar ("crop", "Centre = " + locationStr (centrex, centrey), 0);
     imshow ("crop", cropped);
 }
 
 static void onMouse (int event, int x, int y, int flags, void *userdata)
 {
-    string location = getMouseLocation (x, y);
+    string location = locationStr (x, y);
     
     // For cropping operations
     static bool selecting = false;
