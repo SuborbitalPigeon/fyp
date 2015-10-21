@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 from __future__ import division
+import csv
 import time
 
 import cv2
@@ -8,8 +9,8 @@ from matplotlib import pyplot as plt
 import numpy as np
 
 # removed SIFT and SURF from both lists
-detectors = ["FAST", "STAR", "ORB", "BRISK", "MSER", "GFTT", "HARRIS", "Dense", "SimpleBlob"]
-descriptors = ["BRIEF", "BRISK", "ORB", "FREAK"]
+detectors = ['FAST', 'STAR', 'ORB', 'BRISK', 'MSER', 'GFTT', 'HARRIS', 'Dense', 'SimpleBlob']
+descriptors = ['BRIEF', 'BRISK', 'ORB', 'FREAK']
 
 class Benchmark:
 	def __init__(self, detector, descriptor):
@@ -44,21 +45,30 @@ class Benchmark:
 		return self.times
 			
 
-if __name__ == "__main__":
-	data = {}
+if __name__ == '__main__':
+	times = {}
 
 	for detector in detectors:
 		for descriptor in descriptors:
 			name = "{}/{}".format(detector, descriptor)
+			
 			print("Running {}".format(name))
 			bench = Benchmark(detector, descriptor)
-			times = bench.run_tests('test.mov')
-			data[name] = times
+			times[name] = bench.run_tests('test.mov')
 
-			# show plot
-			plt.figure()
-			plt.boxplot(times, vert=False)
-			plt.xlabel('FPS')
-			plt.ylabel('')
-			plt.title('{}/{}'.format(detector, descriptor))
-			plt.show(block=False)
+			mean = np.mean(times[name])
+			stdev = np.std(times[name])
+			print("Mean: {:.2f} Hz, stdev: {:.2f} Hz".format(mean, stdev))
+
+	# Boxplots
+	plt.boxplot(times.values())
+	# replace this with "labels" keyword parameter if possible
+	plt.xticks(range(1, len(times.keys()) + 1), times.keys())
+	plt.ylabel("Frame rate / FPS")
+	plt.show()
+
+	# CSV
+	with open('data.csv', 'wb') as f:
+		writer = csv.writer(f)
+		writer.writerow(times.keys())
+		writer.writerows(zip(*times.values()))
