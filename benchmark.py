@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+from __future__ import division
 import time
 
 import cv2
@@ -24,7 +25,7 @@ class Benchmark:
 		(keypoints, descriptors) = self.descriptor.compute(frame, keypoints)
 		end = time.clock()
 
-		self.times.append((end - start) * 1000) # convert to milliseconds
+		self.times.append(1 / (end - start))
 
 		return (keypoints, descriptors)
 
@@ -45,7 +46,7 @@ if __name__ == "__main__":
 
 	times = bench.times
 	plt.boxplot(times, vert=False)
-	plt.xlabel('Time / ms')
+	plt.xlabel('FPS')
 	plt.ylabel('')
 	plt.title('{}/{}'.format(detector, descriptor))
 	plt.show()
