@@ -7,12 +7,15 @@ import cv2
 from matplotlib import pyplot as plt
 import numpy as np
 
+# removed SIFT and SURF from both lists
+detectors = ["FAST", "STAR", "ORB", "BRISK", "MSER", "GFTT", "HARRIS", "Dense", "SimpleBlob"]
+descriptors = ["BRIEF", "BRISK", "ORB", "FREAK"]
+
 class Benchmark:
 	def __init__(self, detector, descriptor):
-		if detector not in ["FAST", "STAR", "ORB", "BRISK", "MSER",
-                                    "GFTT", "HARRIS", "Dense", "SimpleBlob"]: # removed SIFT and SURF
+		if detector not in detectors:
 			raise ValueError("Unsupported detector")
-		if descriptor not in ["BRIEF", "BRISK", "ORB", "FREAK"]: # removed SIFT and SURF
+		if descriptor not in descriptors: 
 			raise ValueError("Unsupported descriptor")
 
 		self.detector = cv2.FeatureDetector_create(detector)
@@ -29,24 +32,33 @@ class Benchmark:
 
 		return (keypoints, descriptors)
 
+	def run_tests(self, filename):
+		cap = cv2.VideoCapture(filename)
+		while True:
+			(ret, frame) = cap.read()
+			if ret == False:
+				break
+
+			grey = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY) # convert to greyscale
+			self.get_descriptors(grey)
+		return self.times
+			
+
 if __name__ == "__main__":
-	detector = 'SimpleBlob'
-	descriptor = 'FREAK'
+	data = {}
 
-	bench = Benchmark(detector, descriptor)
-	cap = cv2.VideoCapture('test.mov')
+	for detector in detectors:
+		for descriptor in descriptors:
+			name = "{}/{}".format(detector, descriptor)
+			print("Running {}".format(name))
+			bench = Benchmark(detector, descriptor)
+			times = bench.run_tests('test.mov')
+			data[name] = times
 
-	while True:
-		(ret, frame) = cap.read()
-		if ret == False:
-			break
-
-		grey = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY) # convert to greyscale
-		bench.get_descriptors(grey)
-
-	times = bench.times
-	plt.boxplot(times, vert=False)
-	plt.xlabel('FPS')
-	plt.ylabel('')
-	plt.title('{}/{}'.format(detector, descriptor))
-	plt.show()
+			# show plot
+			plt.figure()
+			plt.boxplot(times, vert=False)
+			plt.xlabel('FPS')
+			plt.ylabel('')
+			plt.title('{}/{}'.format(detector, descriptor))
+			plt.show(block=False)
