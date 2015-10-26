@@ -1,3 +1,4 @@
 *.o
 testwebcam
 *.csv
+*.pyc
