@@ -1,2 +1,3 @@
 *.o
 testwebcam
+*.csv
