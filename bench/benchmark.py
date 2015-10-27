@@ -1,7 +1,17 @@
 import os
 
-class Benchmark:
-    def run_tests(self, files):
+class Benchmark(object):
+    def __init__(self, dirs, fileexts):
+        super(Benchmark, self).__init__()
+
+        self.files = []
+
+        for dir in dirs:
+            for file in os.listdir(dir):
+                if file.endswith(fileexts):
+                    self.files.append(os.path.join(dir, file))
+
+    def run_tests(self):
 	    raise NotImplementedError("This shouldn't happen")
 
     def show_plots(self):
@@ -9,14 +19,3 @@ class Benchmark:
 
     def save_data(self):
     	raise NotImplementedError("This shouldn't happen")
-
-    @staticmethod
-    def get_files_from_dirs(dirs, fileexts):
-        files = []
-
-        for dir in dirs:
-            for file in os.listdir(dir):
-                if file.endswith(fileexts):
-                    files.append(os.path.join(dir, file))
-
-	    return files

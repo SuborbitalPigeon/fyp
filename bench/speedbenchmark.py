@@ -16,7 +16,8 @@ detectors = ['FAST', 'STAR', 'ORB', 'BRISK', 'MSER', 'GFTT', 'HARRIS', 'Dense', 
 descriptors = ['BRIEF', 'BRISK', 'ORB', 'FREAK']
 
 class SpeedBenchmark(Benchmark):
-    def __init__(self):
+    def __init__(self, dirs, fileexts):
+        super(SpeedBenchmark, self).__init__(dirs, fileexts)
         self.times = {}
         self.nkps = {}
 
@@ -30,11 +31,11 @@ class SpeedBenchmark(Benchmark):
         desc = cv2.DescriptorExtractor_create(descriptor)
         return (det, desc)
 
-    def run_test(self, files, detector, descriptor):
+    def run_test(self, detector, descriptor):
         times = []
         nkps = []
 
-        for file in files:
+        for file in self.files:
             image = cv2.imread(file, cv2.CV_LOAD_IMAGE_GRAYSCALE)
             start = time.clock()
             keypoints = detector.detect(image)
@@ -46,7 +47,7 @@ class SpeedBenchmark(Benchmark):
 
         return (np.array(times), np.array(nkps))
 
-    def run_tests(self, files):
+    def run_tests(self):
         count = 0
         for detector in detectors:
             for descriptor in descriptors:
@@ -55,7 +56,7 @@ class SpeedBenchmark(Benchmark):
                 print("Running test {}/{}: {}".format(count, len(detectors) * len(descriptors), name))
 
                 det, desc = self.create_detector_descriptor(detector, descriptor)
-                self.times[name], self.nkps[name] = self.run_test(files, det, desc)
+                self.times[name], self.nkps[name] = self.run_test(det, desc)
 
                 # FPS
                 (mean, stdev) = self.get_mean_stdev(self.times[name])
@@ -105,10 +106,9 @@ class SpeedBenchmark(Benchmark):
         return (mean, stdev)
 
 if __name__ == '__main__':
-    bench = SpeedBenchmark()
-
     dirs = ['bark', 'bikes', 'boat', 'graf', 'leuven', 'trees', 'ubc', 'wall']
-    files = Benchmark.get_files_from_dirs(dirs, ('pgm', 'ppm'))
-    bench.run_tests(files)
+    bench = SpeedBenchmark(dirs, ('pgm', 'ppm'))
+
+    bench.run_tests()
     bench.show_plots()
     bench.save_data()
