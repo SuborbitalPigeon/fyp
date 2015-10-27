@@ -11,12 +11,12 @@ class Benchmark:
     	raise NotImplementedError("This shouldn't happen")
 
     @staticmethod
-    def get_images_from_dirs(dirs):
+    def get_files_from_dirs(dirs, fileexts):
         files = []
 
         for dir in dirs:
             for file in os.listdir(dir):
-                if file.endswith('ppm'):
+                if file.endswith(fileexts):
                     files.append(os.path.join(dir, file))
 
 	    return files

@@ -108,7 +108,7 @@ if __name__ == '__main__':
     bench = SpeedBenchmark()
 
     dirs = ['bark', 'bikes', 'boat', 'graf', 'leuven', 'trees', 'ubc', 'wall']
-    files = Benchmark.get_images_from_dirs(dirs)
+    files = Benchmark.get_files_from_dirs(dirs, ('pgm', 'ppm'))
     bench.run_tests(files)
     bench.show_plots()
     bench.save_data()
