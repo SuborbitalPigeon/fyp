@@ -42,7 +42,7 @@ class Benchmark:
         for file in filenames:
             image = cv2.imread(file, cv2.CV_LOAD_IMAGE_GRAYSCALE)
             (kps, descriptors) = self.get_descriptors(image)
-        return (self.times, self.nkps)
+        return (np.array(self.times), np.array(self.nkps))
 
 def get_mean_stdev(data):
     mean = np.mean(data)
