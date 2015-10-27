@@ -74,20 +74,20 @@ if __name__ == '__main__':
             (mean, stdev) = get_mean_stdev(nkps[name])
             print("Keypoints - mean: {:.2f}, stdev: {:.2f}".format(mean, stdev))
 
-    # FPS plot
-    plt.boxplot(times.values())
+    # FPS plo t
+    plt.boxplot(times.values(), labels=times.keys())
+    locs, labels = plt.xticks()
+    plt.setp(labels, rotation=45)
     plt.title("Frame rate")
-    # replace this with "labels" keyword parameter if possible
-    plt.xticks(range(1, len(times.keys()) + 1), times.keys(), rotation=45)
     plt.ylabel("Frame rate / FPS")
-    plt.show(block=False)
+    plt.show(block=True)
 
     # Number of keypoints plot
     plt.figure()
-    plt.boxplot(nkps.values(), labels=times.keys())
+    plt.boxplot(nkps.values(), labels=nkps.keys())
+    locs, labels = plt.xticks()
+    plt.setp(labels, rotation=45)
     plt.title("Keypoints")
-    # replace this with "labels" keyword parameter if possible
-    plt.xticks(range(1, len(times.keys()) + 1), times.keys(), rotation=45)
     plt.ylabel("Keypoints")
     plt.yscale('log')
     plt.show()
