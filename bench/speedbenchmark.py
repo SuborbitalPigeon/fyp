@@ -3,6 +3,7 @@
 from __future__ import division
 
 import csv
+import itertools
 import time
 
 import cv2
@@ -49,23 +50,21 @@ class SpeedBenchmark(Benchmark):
 
     def run_tests(self):
         count = 0
-        for detector in detectors:
-            for descriptor in descriptors:
-                count += 1
-                name = "{}/{}".format(detector, descriptor)
-                print("Running test {}/{}: {}".format(count, len(detectors) * len(descriptors), name))
+        for detector, descriptor in itertools.product(detectors, descriptors):
+            count += 1
+            name = "{}/{}".format(detector, descriptor)
+            print("Running test {}/{}: {}".format(count, len(detectors) * len(descriptors), name))
 
-                det, desc = self.create_detector_descriptor(detector, descriptor)
-                self.times[name], self.nkps[name] = self.run_test(det, desc)
+            det, desc = self.create_detector_descriptor(detector, descriptor)
+            self.times[name], self.nkps[name] = self.run_test(det, desc)
 
-                # FPS
-                (mean, stdev) = self.get_mean_stdev(self.times[name])
-                print("FPS - mean: {:.2f} Hz, stdev: {:.2f} Hz".format(mean, stdev))
+            # FPS
+            (mean, stdev) = self.get_mean_stdev(self.times[name])
+            print("FPS - mean: {:.2f} Hz, stdev: {:.2f} Hz".format(mean, stdev))
 
-                # Keypoints
-                (mean, stdev) = self.get_mean_stdev(self.nkps[name])
-                print("Keypoints - mean: {:.2f}, stdev: {:.2f}".format(mean, stdev))
-
+            # Keypoints
+            (mean, stdev) = self.get_mean_stdev(self.nkps[name])
+            print("Keypoints - mean: {:.2f}, stdev: {:.2f}".format(mean, stdev))
 
     def show_plots(self):
         # FPS plot
