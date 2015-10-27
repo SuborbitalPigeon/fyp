@@ -1,105 +1,22 @@
-#!/usr/bin/env python
-
-from __future__ import division
-
-import csv
-import time
-
-import cv2
-from matplotlib import pyplot as plt
-import numpy as np
-
-from fileutils import get_images_from_dirs
-
-# removed SIFT and SURF from both lists
-detectors = ['FAST', 'STAR', 'ORB', 'BRISK', 'MSER', 'GFTT', 'HARRIS', 'Dense', 'SimpleBlob']
-descriptors = ['BRIEF', 'BRISK', 'ORB', 'FREAK']
+import os
 
 class Benchmark:
-    def __init__(self, detector, descriptor):
-        if detector not in detectors:
-            raise ValueError("Unsupported detector")
-        if descriptor not in descriptors: 
-            raise ValueError("Unsupported descriptor")
+    def run_tests(self, files):
+	    raise NotImplementedError("This shouldn't happen")
 
-        self.detector = cv2.FeatureDetector_create(detector)
-        self.descriptor = cv2.DescriptorExtractor_create(descriptor)
-        self.times = []
-        self.nkps = []
+    def show_plots(self):
+	    raise NotImplementedError("This shouldn't happen")
 
-    def get_descriptors(self, frame):
-        start = time.clock()
-        keypoints = self.detector.detect(frame)
-        (keypoints, descriptors) = self.descriptor.compute(frame, keypoints)
-        end = time.clock()
+    def save_data(self):
+    	raise NotImplementedError("This shouldn't happen")
 
-        self.times.append(1 / (end - start))
-        self.nkps.append(len(keypoints))
+    @staticmethod
+    def get_images_from_dirs(dirs):
+        files = []
 
-        return (keypoints, descriptors)
+        for dir in dirs:
+            for file in os.listdir(dir):
+                if file.endswith('ppm'):
+                    files.append(os.path.join(dir, file))
 
-    def run_tests(self, filenames):
-        for file in filenames:
-            image = cv2.imread(file, cv2.CV_LOAD_IMAGE_GRAYSCALE)
-            (kps, descriptors) = self.get_descriptors(image)
-        return (np.array(self.times), np.array(self.nkps))
-
-def get_mean_stdev(data):
-    mean = np.mean(data)
-    stdev = np.std(data)
-    return (mean, stdev)
-
-if __name__ == '__main__':
-    times = {}
-    nkps = {} # number of keypoints
-
-    count = 0
-    for detector in detectors:
-        for descriptor in descriptors:
-            count += 1
-            name = "{}/{}".format(detector, descriptor)
-            print("Running test {}/{}: {}".format(count, len(detectors) * len(descriptors), name))
-
-            bench = Benchmark(detector, descriptor)
-            dirs = ['bark', 'bikes', 'boat', 'graf', 'leuven', 'trees', 'ubc', 'wall']
-            files = get_images_from_dirs(dirs)
-
-            times[name], nkps[name] = bench.run_tests(files)
-
-            # FPS
-            (mean, stdev) = get_mean_stdev(times[name])
-            print("FPS - mean: {:.2f} Hz, stdev: {:.2f} Hz".format(mean, stdev))
-
-            # Keypoints
-            (mean, stdev) = get_mean_stdev(nkps[name])
-            print("Keypoints - mean: {:.2f}, stdev: {:.2f}".format(mean, stdev))
-
-    # FPS plo t
-    plt.boxplot(times.values(), labels=times.keys())
-    locs, labels = plt.xticks()
-    plt.setp(labels, rotation=45)
-    plt.title("Frame rate")
-    plt.ylabel("Frame rate / FPS")
-    plt.show(block=True)
-
-    # Number of keypoints plot
-    plt.figure()
-    plt.boxplot(nkps.values(), labels=nkps.keys())
-    locs, labels = plt.xticks()
-    plt.setp(labels, rotation=45)
-    plt.title("Keypoints")
-    plt.ylabel("Keypoints")
-    plt.yscale('log')
-    plt.show()
-
-    # FPS CSV
-    with open('fps.csv', 'wb') as f:
-        writer = csv.writer(f)
-        writer.writerow(times.keys())
-        writer.writerows(zip(*times.values()))
-
-    # Number of keypoints CSV
-    with open('nkps.csv', 'wb') as f:
-        writer = csv.writer(f)
-        writer.writerow(nkps.keys())
-        writer.writerows(zip(*nkps.values()))
+	    return files
