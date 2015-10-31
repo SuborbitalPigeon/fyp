@@ -33,6 +33,11 @@ class Benchmark(object):
         desc = cv2.DescriptorExtractor_create(descriptor)
         return (det, desc)
 
+    def get_keypoints(self, image, detector, descriptor):
+        keypoints = detector.detect(image)
+        (keypoints, descriptors) = descriptor.compute(image, keypoints)
+        return (keypoints, descriptors)
+
     def run_tests(self):
         """ Run the tests in the benchmark.
 

@@ -35,8 +35,7 @@ class SpeedBenchmark(Benchmark):
         for file in self.files:
             image = cv2.imread(file, cv2.CV_LOAD_IMAGE_GRAYSCALE)
             start = time.clock()
-            keypoints = detector.detect(image)
-            (keypoints, descriptors) = descriptor.compute(image, keypoints)
+            (keypoints, descriptors) = self.get_keypoints(image, detector, descriptor)
             end = time.clock()
 
             times.append(1 / (end - start))
