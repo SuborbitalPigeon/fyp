@@ -12,37 +12,23 @@ import numpy as np
 
 from benchmark import Benchmark
 
-# removed SIFT and SURF from both lists
-detectors = ['FAST', 'STAR', 'ORB', 'BRISK', 'MSER', 'GFTT', 'HARRIS', 'Dense', 'SimpleBlob']
-descriptors = ['BRIEF', 'BRISK', 'ORB', 'FREAK']
-
 class SpeedBenchmark(Benchmark):
-    """ Benchmark concerned with the raw speed of combinations of detector and descriptor.
-
-    Parameters
-    ----------
-    dirs : List[str]
-        A list of directories to scan.
-    filexts : Tuple[str]
-        A tuple containing the file extensions to allow for test images.
-
-    """
     def __init__(self, dirs, fileexts):
+        """ Benchmark concerned with the raw speed of combinations of detector and descriptor.
+
+        Parameters
+        ----------
+        dirs : List[str]
+            A list of directories to scan.
+        filexts : Tuple[str]
+            A tuple containing the file extensions to allow for test images.
+
+        """
         super(SpeedBenchmark, self).__init__(dirs, fileexts)
         self.times = {}
         self.nkps = {}
 
-    def _create_detector_descriptor(self, detector, descriptor):
-        if detector not in detectors:
-            raise ValueError("Unsupported detector")
-        if descriptor not in descriptors:
-            raise ValueError("Unsupported descriptor")
-
-        det = cv2.FeatureDetector_create(detector)
-        desc = cv2.DescriptorExtractor_create(descriptor)
-        return (det, desc)
-
-    def _run_test(self, detector, descriptor):
+    def run_test(self, detector, descriptor, label):
         times = []
         nkps = []
 
@@ -56,25 +42,16 @@ class SpeedBenchmark(Benchmark):
             times.append(1 / (end - start))
             nkps.append(len(keypoints))
 
-        return (np.array(times), np.array(nkps))
+        self.times[label] = np.array(times)
+        self.nkps[label] = np.array(nkps)
 
-    def run_tests(self):
-        count = 0
-        for detector, descriptor in itertools.product(detectors, descriptors):
-            count += 1
-            name = "{}/{}".format(detector, descriptor)
-            print("Running test {}/{}: {}".format(count, len(detectors) * len(descriptors), name))
+        # FPS
+        (mean, stdev) = self.get_mean_stdev(self.times[label])
+        print("FPS - mean: {:.2f} Hz, stdev: {:.2f} Hz".format(mean, stdev))
 
-            det, desc = self._create_detector_descriptor(detector, descriptor)
-            self.times[name], self.nkps[name] = self._run_test(det, desc)
-
-            # FPS
-            (mean, stdev) = self.get_mean_stdev(self.times[name])
-            print("FPS - mean: {:.2f} Hz, stdev: {:.2f} Hz".format(mean, stdev))
-
-            # Keypoints
-            (mean, stdev) = self.get_mean_stdev(self.nkps[name])
-            print("Keypoints - mean: {:.2f}, stdev: {:.2f}".format(mean, stdev))
+        # Keypoints
+        (mean, stdev) = self.get_mean_stdev(self.nkps[label])
+        print("Keypoints - mean: {:.2f}, stdev: {:.2f}".format(mean, stdev))
 
     def show_plots(self):
         # FPS plot
@@ -108,23 +85,23 @@ class SpeedBenchmark(Benchmark):
             writer.writerow(self.nkps.keys())
             writer.writerows(zip(*self.nkps.values()))
 
-    """ Convienence function to obtain the mean and standard deviation of data.
-
-    Parameters
-    ----------
-    data : ndarray
-        The collection of data.
-
-    Returns
-    -------
-    mean : float
-        The mean of the data.
-    stdev : float
-        The sample standard deviation of the data.
-
-    """
     @staticmethod
     def get_mean_stdev(data):
+        """ Convienence function to obtain the mean and standard deviation of data.
+
+        Parameters
+        ----------
+        data : ndarray
+            The collection of data.
+
+        Returns
+        -------
+        mean : float
+            The mean of the data.
+        stdev : float
+            The sample standard deviation of the data.
+
+        """
         mean = np.mean(data)
         stdev = np.std(data)
         return (mean, stdev)
