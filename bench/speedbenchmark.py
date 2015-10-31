@@ -17,12 +17,22 @@ detectors = ['FAST', 'STAR', 'ORB', 'BRISK', 'MSER', 'GFTT', 'HARRIS', 'Dense', 
 descriptors = ['BRIEF', 'BRISK', 'ORB', 'FREAK']
 
 class SpeedBenchmark(Benchmark):
+    """ Benchmark concerned with the raw speed of combinations of detector and descriptor.
+
+    Parameters
+    ----------
+    dirs : List[str]
+        A list of directories to scan.
+    filexts : Tuple[str]
+        A tuple containing the file extensions to allow for test images.
+
+    """
     def __init__(self, dirs, fileexts):
         super(SpeedBenchmark, self).__init__(dirs, fileexts)
         self.times = {}
         self.nkps = {}
 
-    def create_detector_descriptor(self, detector, descriptor):
+    def _create_detector_descriptor(self, detector, descriptor):
         if detector not in detectors:
             raise ValueError("Unsupported detector")
         if descriptor not in descriptors:
@@ -32,7 +42,7 @@ class SpeedBenchmark(Benchmark):
         desc = cv2.DescriptorExtractor_create(descriptor)
         return (det, desc)
 
-    def run_test(self, detector, descriptor):
+    def _run_test(self, detector, descriptor):
         times = []
         nkps = []
 
@@ -55,8 +65,8 @@ class SpeedBenchmark(Benchmark):
             name = "{}/{}".format(detector, descriptor)
             print("Running test {}/{}: {}".format(count, len(detectors) * len(descriptors), name))
 
-            det, desc = self.create_detector_descriptor(detector, descriptor)
-            self.times[name], self.nkps[name] = self.run_test(det, desc)
+            det, desc = self._create_detector_descriptor(detector, descriptor)
+            self.times[name], self.nkps[name] = self._run_test(det, desc)
 
             # FPS
             (mean, stdev) = self.get_mean_stdev(self.times[name])
@@ -98,6 +108,21 @@ class SpeedBenchmark(Benchmark):
             writer.writerow(self.nkps.keys())
             writer.writerows(zip(*self.nkps.values()))
 
+    """ Convienence function to obtain the mean and standard deviation of data.
+
+    Parameters
+    ----------
+    data : ndarray
+        The collection of data.
+
+    Returns
+    -------
+    mean : float
+        The mean of the data.
+    stdev : float
+        The sample standard deviation of the data.
+
+    """
     @staticmethod
     def get_mean_stdev(data):
         mean = np.mean(data)
