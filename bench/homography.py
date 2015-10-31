@@ -4,7 +4,21 @@
 import cv2
 import numpy as np
 
+
 def file_to_matrix(filename):
+    """ Opens and parses a homography file and converts to a matrix.
+
+    Parameters
+    ----------
+    filename : str
+        The file to parse.
+
+    Returns
+    -------
+    h : ndarray
+        The homography matrix.
+
+    """
     with open(filename) as f:
         data = f.readlines()
 
@@ -12,9 +26,26 @@ def file_to_matrix(filename):
     return np.array(data[:3], dtype=float) # strip the last newline
 
 def transform_point(p, h):
+    """ Transforms a 2D point according to a homography matrix.
+
+    Similar to OpenCV's warpPerspective function, but operates on a single point.
+
+    Parameters
+    ----------
+    p : ndarray
+        A 2D point.
+    h : ndarray
+        A homography matrix.
+
+    Returns
+    -------
+    pt : ndarray
+        The point after transformation.
+
+    """
     p = np.vstack((p, 1))  # (x, y, 1)^T
-    d = np.dot(h, p)       # h × p
-    return (d / d[2])[0:2] # Divide top and middle rows by bottom, slice only these rows
+    d = np.dot(h, p)       # h * p
+    return (d / d[2])[0:2] # Divide rows 1 and 2 by 3, return only these rows
 
 if __name__ == '__main__':
     mat = file_to_matrix('bark/H1to2p')
