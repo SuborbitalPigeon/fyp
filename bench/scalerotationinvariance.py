@@ -13,7 +13,8 @@ from benchmark import Benchmark
 
 THRESHOLD = 10
 
-#TODO look at https://github.com/Itseez/opencv/blob/master/modules/features2d/src/evaluation.cpps
+#TODO look at https://github.com/Itseez/opencv/blob/master/modules/features2d/src/evaluation.cpp
+#TODO only consider keypoints within the transformed image plane
 
 class ScaleRotationInvariance(Benchmark):
     def __init__(self, dirs, fileexts):
@@ -28,7 +29,7 @@ class ScaleRotationInvariance(Benchmark):
         return np.transpose(d)
 
     def run_test(self, detector, descriptor, label):
-        pattern = re.compile('([a-z]+)/img(\d).(\w+)')
+        pattern = re.compile('(\w+)/img(\d).(\w+)')
 
         for file in self.files:
             match = pattern.match(file)
