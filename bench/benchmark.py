@@ -20,7 +20,7 @@ class Benchmark(object):
         self.files = [os.path.join(dir, file) for dir in dirs for file in os.listdir(dir) if file.endswith(fileexts)]
 
         # removed SIFT and SURF from both lists
-        self.detectors = ['FAST', 'STAR', 'ORB', 'BRISK', 'MSER', 'GFTT', 'HARRIS', 'Dense', 'SimpleBlob']
+        self.detectors = ['FAST', 'STAR', 'ORB', 'BRISK', 'MSER', 'GFTT', 'HARRIS', 'Dense']
         self.descriptors = ['BRIEF', 'BRISK', 'ORB', 'FREAK']
 
     def _create_detector_descriptor(self, detector, descriptor):

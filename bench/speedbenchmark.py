@@ -44,14 +44,6 @@ class SpeedBenchmark(Benchmark):
         self.times[label] = np.array(times)
         self.nkps[label] = np.array(nkps)
 
-        # FPS
-        (mean, stdev) = self.get_mean_stdev(self.times[label])
-        print("FPS - mean: {:.2f} Hz, stdev: {:.2f} Hz".format(mean, stdev))
-
-        # Keypoints
-        (mean, stdev) = self.get_mean_stdev(self.nkps[label])
-        print("Keypoints - mean: {:.2f}, stdev: {:.2f}".format(mean, stdev))
-
     def show_plots(self):
         # FPS plot
         plt.boxplot(self.times.values(), labels=self.times.keys())
@@ -83,27 +75,6 @@ class SpeedBenchmark(Benchmark):
             writer = csv.writer(f)
             writer.writerow(self.nkps.keys())
             writer.writerows(zip(*self.nkps.values()))
-
-    @staticmethod
-    def get_mean_stdev(data):
-        """ Convienence function to obtain the mean and standard deviation of data.
-
-        Parameters
-        ----------
-        data : ndarray
-            The collection of data.
-
-        Returns
-        -------
-        mean : float
-            The mean of the data.
-        stdev : float
-            The sample standard deviation of the data.
-
-        """
-        mean = np.mean(data)
-        stdev = np.std(data)
-        return (mean, stdev)
 
 if __name__ == '__main__':
     dirs = ['bark', 'bikes', 'boat', 'graf', 'leuven', 'trees', 'ubc', 'wall']
