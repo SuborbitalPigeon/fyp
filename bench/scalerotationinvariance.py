@@ -2,6 +2,7 @@
 
 from __future__ import division
 
+import csv
 import os
 import re
 
@@ -16,7 +17,8 @@ THRESHOLD = 10
 class ScaleRotationInvariance(Benchmark):
     def __init__(self, dirs, fileexts):
         super(ScaleRotationInvariance, self).__init__(dirs, fileexts)
-        self.kps = {}
+
+        self.data = {}
 
     @staticmethod
     def _transform_point(p, h):
@@ -38,6 +40,8 @@ class ScaleRotationInvariance(Benchmark):
         return ret
 
     def run_test(self, detector, descriptor, label):
+        kps = []
+        ckps = []
         pattern = re.compile('(\w+)/img(\d).(\w+)')
 
         for file in self.files:
@@ -73,17 +77,23 @@ class ScaleRotationInvariance(Benchmark):
                 tpts = np.vstack(tpts)
                 pts = np.vstack(pts)
                 dist = distance.cdist(pts, tpts)
-                count = np.sum(np.any(dist < THRESHOLD, axis=1))
-                print("Image {} correspondence: {}/{} {:.2f} %".format(num, count, len(dist), (count / len(dist) * 100)))
+                kps.append(len(dist)) # total evaulated keypoints
+                ckps.append(np.sum(np.any(dist < THRESHOLD, axis=1))) # corresponding keypoints
+
+        self.data[label] = np.true_divide(ckps, kps)
 
     def show_plots(self):
         raise NotImplementedError("Not implemented yet")
 
     def save_data(self):
-        raise NotImplementedError("Not implemented yet")
+        with open('scale.csv', 'wb') as f:
+            writer = csv.writer(f)
+            writer.writerow(self.data.keys())
+            writer.writerows(zip(*self.data.values()))
 
 if __name__ == '__main__':
     dirs = ['boat']
     bench = ScaleRotationInvariance(dirs, 'pgm')
 
     bench.run_tests()
+    bench.save_data()
