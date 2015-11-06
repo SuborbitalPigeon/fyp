@@ -10,13 +10,13 @@ import cv2
 import numpy as np
 from scipy.spatial import distance
 
-from benchmark import Benchmark
+from performancetest import PerformanceTest
 
 THRESHOLD = 10
 
-class ScaleRotationInvariance(Benchmark):
+class RepeatabilityTest(PerformanceTest):
     def __init__(self, dirs, fileexts):
-        super(ScaleRotationInvariance, self).__init__(dirs, fileexts)
+        super(RepeatabilityTest, self).__init__(dirs, fileexts)
 
         self.data = {}
 
@@ -93,7 +93,7 @@ class ScaleRotationInvariance(Benchmark):
 
 if __name__ == '__main__':
     dirs = ['boat']
-    bench = ScaleRotationInvariance(dirs, 'pgm')
+    test = RepeatabilityTest(dirs, 'pgm')
 
-    bench.run_tests()
-    bench.save_data()
+    test.run_tests()
+    test.save_data()

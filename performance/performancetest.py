@@ -3,7 +3,7 @@ import os
 
 import cv2
 
-class Benchmark(object):
+class PerformanceTest(object):
     def __init__(self, dirs, fileexts):
         """ Base class for benchmark implementations.
 
@@ -15,7 +15,7 @@ class Benchmark(object):
             A tuple containing the file extensions to allow for test images.
 
         """
-        super(Benchmark, self).__init__()
+        super(PerformanceTest, self).__init__()
 
         self.files = [os.path.join(dir, file) for dir in dirs for file in os.listdir(dir) if file.endswith(fileexts)]
 

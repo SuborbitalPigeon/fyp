@@ -10,9 +10,9 @@ import cv2
 from matplotlib import pyplot as plt
 import numpy as np
 
-from benchmark import Benchmark
+from performancetest import PerformanceTest
 
-class SpeedBenchmark(Benchmark):
+class SpeedTest(PerformanceTest):
     def __init__(self, dirs, fileexts):
         """ Benchmark concerned with the raw speed of combinations of detector and descriptor.
 
@@ -24,7 +24,7 @@ class SpeedBenchmark(Benchmark):
             A tuple containing the file extensions to allow for test images.
 
         """
-        super(SpeedBenchmark, self).__init__(dirs, fileexts)
+        super(SpeedTest, self).__init__(dirs, fileexts)
         self.times = {}
         self.nkps = {}
 
@@ -78,8 +78,8 @@ class SpeedBenchmark(Benchmark):
 
 if __name__ == '__main__':
     dirs = ['bark', 'bikes', 'boat', 'graf', 'leuven', 'trees', 'ubc', 'wall']
-    bench = SpeedBenchmark(dirs, ('pgm', 'ppm'))
+    test = SpeedTest(dirs, ('pgm', 'ppm'))
 
-    bench.run_tests()
-    bench.show_plots()
-    bench.save_data()
+    test.run_tests()
+    test.show_plots()
+    test.save_data()
