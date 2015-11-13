@@ -1,6 +1,4 @@
-#!/usr/bin/env python
-
-from __future__ import division
+#!/usr/bin/env python3
 
 import csv
 import itertools
@@ -24,7 +22,7 @@ class SpeedTest(PerformanceTest):
             A tuple containing the file extensions to allow for test images.
 
         """
-        super(SpeedTest, self).__init__(dirs, fileexts)
+        super().__init__(dirs, fileexts)
         self.times = {}
         self.nkps = {}
 

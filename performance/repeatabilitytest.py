@@ -1,6 +1,4 @@
-#!/usr/bin/env python
-
-from __future__ import division
+#!/usr/bin/env python3
 
 import csv
 import os
@@ -16,7 +14,7 @@ THRESHOLD = 10
 
 class RepeatabilityTest(PerformanceTest):
     def __init__(self, dirs, fileexts):
-        super(RepeatabilityTest, self).__init__(dirs, fileexts)
+        super().__init__(dirs, fileexts)
 
         self.data = {}
 

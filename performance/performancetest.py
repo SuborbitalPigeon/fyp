@@ -1,10 +1,10 @@
+from abc import ABCMeta, abstractmethod
 import itertools
 import os
 
 import cv2
-from cv2 import xfeatures2d
 
-class PerformanceTest(object):
+class PerformanceTest(metaclass=ABCMeta):
     def __init__(self, dirs, fileexts):
         """ Base class for benchmark implementations.
 
@@ -16,8 +16,6 @@ class PerformanceTest(object):
             A tuple containing the file extensions to allow for test images.
 
         """
-        super(PerformanceTest, self).__init__()
-
         self.files = [os.path.join(dir, file) for dir in dirs for file in os.listdir(dir) if file.endswith(fileexts)]
 
         self.detectors = ['AKAZE', 'BRISK', 'FAST', 'GFTT', 'KAZE', 'MSER', 'ORB', 'SIFT', 'SURF', 'Star'] # missing: 'LUCID'
@@ -39,18 +37,10 @@ class PerformanceTest(object):
             det = cv2.GFTTDetector_create()
         elif detector is 'KAZE':
             det = cv2.KAZE_create()
-        elif detector is 'LUCID':
-            det = xfeatures2d.LUCID_create()
         elif detector is 'MSER':
             det = cv2.MSER_create()
         elif detector is 'ORB':
             det = cv2.ORB_create()
-        elif detector is 'SIFT':
-            det = xfeatures2d.SIFT_create()
-        elif detector is 'SURF':
-            det = xfeatures2d.SURF_create()
-        elif detector is 'Star':
-            det = xfeatures2d.StarDetector_create()
         else:
             raise ValueError("Unsupported detector")
 
@@ -61,8 +51,6 @@ class PerformanceTest(object):
                 return None, None
         elif descriptor is 'BRISK':
             desc = cv2.BRISK_create()
-        elif descriptor is 'FREAK':
-            desc = xfeatures2d.FREAK_create()
         elif descriptor is 'KAZE':
             if detector is 'AKAZE' or detector is 'KAZE':
                 desc = cv2.KAZE_create()
@@ -70,10 +58,6 @@ class PerformanceTest(object):
                 return None, None
         elif descriptor is 'ORB':
             desc = cv2.ORB_create()
-        elif descriptor is 'SIFT':
-            desc = xfeatures2d.SIFT_create()
-        elif descriptor is 'SURF':
-            desc = xfeatures2d.SURF_create()
         else:
             raise ValueError("Unsupported descriptor")
 
@@ -105,6 +89,7 @@ class PerformanceTest(object):
 
             self.run_test(det, desc, label)
 
+    @abstractmethod
     def run_test(self, detector, descriptor, label):
         """ Run a test on one detector/descriptor combination.
 
@@ -120,16 +105,18 @@ class PerformanceTest(object):
             Label to give this combination.
 
         """
-        raise NotImplementedError("Subclasses should implement this method")
+        pass
 
+    @abstractmethod
     def show_plots(self):
         """ Shows the results of the benchmark in a graphical way.
 
         """
-        raise NotImplementedError("Subclasses should implement this method")
+        pass
 
+    @abstractmethod
     def save_data(self):
         """ Saves the data obtained from the tests into CSV files.
 
         """
-        raise NotImplementedError("Subclasses should implement this method")
+        pass
