@@ -33,7 +33,7 @@ class SpeedTest(PerformanceTest):
         nkps = []
 
         for file in self.files:
-            image = cv2.imread(file, cv2.CV_LOAD_IMAGE_GRAYSCALE)
+            image = cv2.imread(file, 0)
             start = time.clock()
             (keypoints, descriptors) = self.get_keypoints(image, detector, descriptor)
             end = time.clock()
