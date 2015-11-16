@@ -1,4 +1,4 @@
 *.o
 testwebcam
 *.csv
-*.pyc
+__pycache__
