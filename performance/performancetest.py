@@ -21,7 +21,7 @@ class PerformanceTest(object):
         self.files = [os.path.join(dir, file) for dir in dirs for file in os.listdir(dir) if file.endswith(fileexts)]
 
         self.detectors = ['AKAZE', 'BRISK', 'FAST', 'GFTT', 'KAZE', 'MSER', 'ORB', 'SIFT', 'SURF', 'Star'] # missing: 'LUCID'
-        self.descriptors = ['BRISK', 'FREAK', 'ORB', 'SIFT', 'SURF'] # add in 'AKAZE' and 'KAZE', can only use their own detectors
+        self.descriptors = ['AKAZE', 'BRISK', 'FREAK', 'KAZE', 'ORB', 'SIFT', 'SURF']
 
     def _create_detector_descriptor(self, detector, descriptor):
         if detector not in self.detectors:
@@ -55,13 +55,19 @@ class PerformanceTest(object):
             raise ValueError("Unsupported detector")
 
         if descriptor is 'AKAZE':
-            desc = cv2.AKAZE_create()
+            if detector is 'AKAZE' or detector is 'KAZE':
+                desc = cv2.AKAZE_create()
+            else:
+                return None, None
         elif descriptor is 'BRISK':
             desc = cv2.BRISK_create()
         elif descriptor is 'FREAK':
             desc = xfeatures2d.FREAK_create()
         elif descriptor is 'KAZE':
-            desc = cv2.KAZE_create()
+            if detector is 'AKAZE' or detector is 'KAZE':
+                desc = cv2.KAZE_create()
+            else:
+                return None, None
         elif descriptor is 'ORB':
             desc = cv2.ORB_create()
         elif descriptor is 'SIFT':
@@ -74,9 +80,13 @@ class PerformanceTest(object):
         return (det, desc)
 
     def get_keypoints(self, image, detector, descriptor):
-        keypoints = detector.detect(image)
-        (keypoints, descriptors) = descriptor.compute(image, keypoints)
-        return (keypoints, descriptors)
+        try:
+            keypoints = detector.detect(image)
+            (keypoints, descriptors) = descriptor.compute(image, keypoints)
+        except:
+            return ([], [])
+        else:
+            return (keypoints, descriptors)
 
     def run_tests(self):
         """ Run the tests in the benchmark.
@@ -86,11 +96,13 @@ class PerformanceTest(object):
         for detector, descriptor in itertools.product(self.detectors, self.descriptors):
             count += 1
             label = "{}/{}".format(detector, descriptor)
-            print("Running test {}/{} - {}/{}".format(count, len(self.detectors) * len(self.descriptors), detector, descriptor))
+            print("Running test {}/{}  - {}/{}".format(count, len(self.detectors) * len(self.descriptors), detector, descriptor))
 
             det, desc = self._create_detector_descriptor(detector, descriptor)
-            if desc == None:
+            if det == None or desc == None:
+                print("Invalid combination - {}/{}".format(detector, descriptor))
                 continue
+
             self.run_test(det, desc, label)
 
     def run_test(self, detector, descriptor, label):

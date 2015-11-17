@@ -45,23 +45,8 @@ class SpeedTest(PerformanceTest):
         self.nkps[label] = np.array(nkps)
 
     def show_plots(self):
-        # FPS plot
-        plt.boxplot(self.times.values(), labels=self.times.keys())
-        locs, labels = plt.xticks()
-        plt.setp(labels, rotation=45)
-        plt.title("Frame rate")
-        plt.ylabel("Frame rate / FPS")
-        plt.show()
-
-        # Number of keypoints plot
-        plt.figure()
-        plt.boxplot(self.nkps.values(), labels=self.nkps.keys())
-        locs, labels = plt.xticks()
-        plt.setp(labels, rotation=45)
-        plt.title("Keypoints")
-        plt.ylabel("Keypoints")
-        plt.yscale('log')
-        plt.show()
+        pass
+        # TODO: reimplment graphing
 
     def save_data(self):
         # FPS CSV
