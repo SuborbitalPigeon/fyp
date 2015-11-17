@@ -3,6 +3,7 @@ import itertools
 import os
 
 import cv2
+from cv2 import xfeatures2d
 
 class PerformanceTest(metaclass=ABCMeta):
     def __init__(self, dirs, fileexts):
@@ -41,6 +42,12 @@ class PerformanceTest(metaclass=ABCMeta):
             det = cv2.MSER_create()
         elif detector is 'ORB':
             det = cv2.ORB_create()
+        elif detector is 'SIFT':
+            det = xfeatures2d.SIFT_create()
+        elif detector is 'SURF':
+            det = xfeatures2d.SURF_create()
+        elif detector is 'Star':
+            det = xfeatures2d.StarDetector_create()
         else:
             raise ValueError("Unsupported detector")
 
@@ -51,6 +58,8 @@ class PerformanceTest(metaclass=ABCMeta):
                 return None, None
         elif descriptor is 'BRISK':
             desc = cv2.BRISK_create()
+        elif descriptor is 'FREAK':
+            desc = xfeatures2d.FREAK_create()
         elif descriptor is 'KAZE':
             if detector is 'AKAZE' or detector is 'KAZE':
                 desc = cv2.KAZE_create()
@@ -58,6 +67,10 @@ class PerformanceTest(metaclass=ABCMeta):
                 return None, None
         elif descriptor is 'ORB':
             desc = cv2.ORB_create()
+        elif descriptor is 'SIFT':
+            desc = xfeatures2d.SIFT_create()
+        elif descriptor is 'SURF':
+            desc = xfeatures2d.SURF_create()
         else:
             raise ValueError("Unsupported descriptor")
 
