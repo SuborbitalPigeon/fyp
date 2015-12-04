@@ -5,26 +5,6 @@ import cv2
 import numpy as np
 
 
-def file_to_matrix(filename):
-    """ Opens and parses a homography file and converts to a matrix.
-
-    Parameters
-    ----------
-    filename : str
-        The file to parse.
-
-    Returns
-    -------
-    h : ndarray
-        The homography matrix.
-
-    """
-    with open(filename) as f:
-        data = f.readlines()
-
-    data = [line.split() for line in data]
-    return np.array(data[:3], dtype=float) # strip the last newline
-
 def transform_point(p, h):
     """ Transforms a 2D point according to a homography matrix.
 
@@ -48,24 +28,26 @@ def transform_point(p, h):
     return (d / d[2])[0:2] # Divide rows 1 and 2 by 3, return only these rows
 
 if __name__ == '__main__':
-    mat = file_to_matrix('bark/H1to2p')
+    mat = np.loadtxt('bark/H1to2p')
 
-    coor = np.array([[400], [200]])
+    coor = np.array([[200], [400]])
     tcoor = transform_point(coor, mat)
+    print("Original point: {}, transformed point: {}".format(coor.T, tcoor.T))
 
-    cv2.namedWindow("img")
+    cv2.namedWindow("baseimg")
     cv2.namedWindow("img2")
-    cv2.namedWindow("img2h")
+    cv2.namedWindow("baseimg2")
 
     img = cv2.imread('bark/img1.ppm')
     cv2.circle(img, (coor[0], coor[1]), 20, (0, 0, 255), 5)
-    cv2.imshow("img", img)
+    cv2.imshow("baseimg", img)
 
     img2 = cv2.imread('bark/img2.ppm')
     cv2.imshow("img2", img2)
 
-    img2h = cv2.warpPerspective(img, mat, (800, 600))
+    size = img.shape[1::-1]
+    img2h = cv2.warpPerspective(img, mat, size)
     cv2.circle(img2h, (tcoor[0], tcoor[1]), 25, (255, 0, 0), 5)
-    cv2.imshow("img2h", img2h)
+    cv2.imshow("baseimg2", img2h)
 
     cv2.waitKey(0)
