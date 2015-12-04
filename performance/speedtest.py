@@ -47,17 +47,11 @@ class SpeedTest(PerformanceTest):
 
     def show_plots(self):
         labels = list(self.times.keys())
-        ind = np.arange(len(labels))
-        means = []
-        stdevs = []
+        data = list(self.times.values())
 
-        for value in self.times.values():
-            means.append(np.mean(value))
-            stdevs.append(np.std(value))
-
-        plt.bar(ind, means, color='r', yerr=stdevs)
+        plt.boxplot(data, labels=labels)
+        plt.xticks(rotation='vertical')
         plt.ylabel("FPS")
-        plt.xticks(ind + 0.4, labels, rotation='vertical')
         plt.show()
 
     def save_data(self):
