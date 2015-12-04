@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 
 import csv
+from collections import OrderedDict
 import itertools
+from os.path import isdir
+import sys
 import time
 
 import cv2
@@ -23,8 +26,8 @@ class SpeedTest(PerformanceTest):
 
         """
         super().__init__(dirs, fileexts)
-        self.times = {}
-        self.nkps = {}
+        self.times = OrderedDict()
+        self.nkps = OrderedDict()
 
     def run_test(self, detector, descriptor, label):
         times = []
@@ -48,19 +51,22 @@ class SpeedTest(PerformanceTest):
 
     def save_data(self):
         # FPS CSV
-        with open('fps.csv', 'wb') as f:
+        with open('fps.csv', 'w') as f:
             writer = csv.writer(f)
-            writer.writerow(self.times.keys())
+            writer.writerow(list(self.times.keys()))
             writer.writerows(zip(*self.times.values()))
 
         # Number of keypoints CSV
-        with open('nkps.csv', 'wb') as f:
+        with open('nkps.csv', 'w') as f:
             writer = csv.writer(f)
-            writer.writerow(self.nkps.keys())
+            writer.writerow(list(self.nkps.keys()))
             writer.writerows(zip(*self.nkps.values()))
 
 if __name__ == '__main__':
-    dirs = ['bark', 'bikes', 'boat', 'graf', 'leuven', 'trees', 'ubc', 'wall']
+    if len(sys.argv) < 2:
+        raise ValueError("No directories given")
+
+    dirs = [dir for dir in sys.argv[1:] if isdir(dir)]
     test = SpeedTest(dirs, ('pgm', 'ppm'))
 
     test.run_tests()
