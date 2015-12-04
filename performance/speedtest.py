@@ -46,15 +46,19 @@ class SpeedTest(PerformanceTest):
         self.nkps[label] = np.array(nkps)
 
     def show_plots(self):
-        ind = np.arange(len(self.files))
-        labels = self.files
+        labels = list(self.times.keys())
+        ind = np.arange(len(labels))
+        means = []
+        stdevs = []
 
-        for key, value in self.times.items():
-            plt.bar(ind, value)
-            plt.title(key)
-            plt.ylabel("FPS")
-            plt.xticks(ind + 0.4, labels)
-            plt.show()
+        for value in self.times.values():
+            means.append(np.mean(value))
+            stdevs.append(np.std(value))
+
+        plt.bar(ind, means, color='r', yerr=stdevs)
+        plt.ylabel("FPS")
+        plt.xticks(ind + 0.4, labels, rotation='vertical')
+        plt.show()
 
     def save_data(self):
         # FPS CSV
