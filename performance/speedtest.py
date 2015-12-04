@@ -3,7 +3,7 @@
 import csv
 from collections import OrderedDict
 import itertools
-from os.path import isdir
+from os.path import isdir, join
 import sys
 import time
 
@@ -51,13 +51,13 @@ class SpeedTest(PerformanceTest):
 
     def save_data(self):
         # FPS CSV
-        with open('fps.csv', 'w') as f:
+        with open(join('results', 'fps.csv'), 'w') as f:
             writer = csv.writer(f)
             writer.writerow(list(self.times.keys()))
             writer.writerows(zip(*self.times.values()))
 
         # Number of keypoints CSV
-        with open('nkps.csv', 'w') as f:
+        with open(join('results', 'nkps.csv'), 'w') as f:
             writer = csv.writer(f)
             writer.writerow(list(self.nkps.keys()))
             writer.writerows(zip(*self.nkps.values()))

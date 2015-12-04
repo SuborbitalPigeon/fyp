@@ -51,7 +51,7 @@ class PerformanceTest(metaclass=ABCMeta):
         else:
             raise ValueError("Unsupported detector")
 
-        if descriptor is 'AKAZE':
+        if descriptor is 'AKAZE': # AKAZE only allows AKAZE or KAZE detectors
             if detector is 'AKAZE' or detector is 'KAZE':
                 desc = cv2.AKAZE_create()
             else:
@@ -60,7 +60,7 @@ class PerformanceTest(metaclass=ABCMeta):
             desc = cv2.BRISK_create()
         elif descriptor is 'FREAK':
             desc = xfeatures2d.FREAK_create()
-        elif descriptor is 'KAZE':
+        elif descriptor is 'KAZE': # KAZE only allows KAZE or AKAZE detectors
             if detector is 'AKAZE' or detector is 'KAZE':
                 desc = cv2.KAZE_create()
             else:
