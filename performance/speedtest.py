@@ -46,12 +46,23 @@ class SpeedTest(PerformanceTest):
         self.nkps[label] = np.array(nkps)
 
     def show_plots(self):
-        labels = list(self.times.keys())
-        data = list(self.times.values())
+        # One graph per detector
+        for detector in self.detectors:
+            graphdict = OrderedDict()
+            for key, val in self.times.items():
+                if key.startswith(detector):
+                    graphdict[key] = val
 
-        plt.boxplot(data, labels=labels)
-        plt.xticks(rotation='vertical')
-        plt.ylabel("FPS")
+            labels = [l.split('/')[1] for l in graphdict.keys()] # only descriptor bit
+            data = list(graphdict.values())
+            plt.figure()
+            plt.boxplot(data, labels=labels)
+            plt.title("Detector = {}".format(detector))
+            plt.xticks(rotation=45)
+            plt.xlabel("Descriptor")
+            plt.ylabel("FPS")
+            plt.draw()
+
         plt.show()
 
     def save_data(self):

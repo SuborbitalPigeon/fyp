@@ -1,10 +1,14 @@
 #!/usr/bin/env python3
 
 import csv
+from collections import OrderedDict
 import os
+from os.path import join
 import re
 
 import cv2
+from matplotlib import pyplot as plt
+from matplotlib.ticker import FuncFormatter
 import numpy as np
 from scipy.spatial import distance
 
@@ -12,17 +16,19 @@ from performancetest import PerformanceTest
 
 THRESHOLD = 10
 
+
 class RepeatabilityTest(PerformanceTest):
     def __init__(self, dirs, fileexts):
         super().__init__(dirs, fileexts)
 
-        self.data = {}
+        self.data = OrderedDict()
 
     @staticmethod
     def _transform_point(p, h):
-        p = np.vstack((p, 1))  # (x, y, 1)^T
+        # Takes a row vector, and returns a column vector
+        p = np.vstack((p, 1))  # Converts to homogenous coords
         d = np.dot(h, p)       # h * p
-        d = (d / d[2])[0:2] # Divide rows 1 and 2 by 3, return only these rows
+        d = (d / d[2])[0:2]    # Converts from homogenous coords
         return np.transpose(d)[0]
 
     @staticmethod
@@ -46,7 +52,7 @@ class RepeatabilityTest(PerformanceTest):
             match = pattern.match(file)
             (dir, num, ext) = match.groups()
 
-            image = cv2.imread(file, cv2.CV_LOAD_IMAGE_GRAYSCALE)
+            image = cv2.imread(file, 0)
             (keypoints, descriptors) = self.get_keypoints(image, detector, descriptor)
 
             if num is '1':
@@ -72,26 +78,57 @@ class RepeatabilityTest(PerformanceTest):
                     if self._point_in_image(tp, rimage):
                         tpts.append(tp)
 
+                if len(pts) == 0:
+                    continue
+
                 tpts = np.vstack(tpts)
                 pts = np.vstack(pts)
                 dist = distance.cdist(pts, tpts)
                 kps.append(len(dist)) # total evaulated keypoints
                 ckps.append(np.sum(np.any(dist < THRESHOLD, axis=1))) # corresponding keypoints
 
-        self.data[label] = np.true_divide(ckps, kps)
+        if len(kps) > 0:
+            self.data[label] = np.true_divide(ckps, kps)
+
+    @staticmethod
+    def _percent_format(y, position):
+        s = str(y * 100)
+        return s + '%'
 
     def show_plots(self):
-        raise NotImplementedError("Not implemented yet")
+        ytick = FuncFormatter(self._percent_format)
+
+        # One graph per detector
+        for detector in self.detectors:
+            graphdict = OrderedDict()
+            for key, val in self.data.items():
+                if key.startswith(detector):
+                    graphdict[key] = val
+
+            labels = [l.split('/')[1] for l in graphdict.keys()] # only descriptor bit
+            data = list(graphdict.values())
+            plt.figure()
+            plt.boxplot(data, labels=labels)
+            plt.title("Detector = {}".format(detector))
+            plt.xticks(rotation=45)
+            plt.xlabel("Descriptor")
+            plt.gca().yaxis.set_major_formatter(ytick)
+            plt.ylabel("Repeatability")
+            plt.ylim(0, 1)
+            plt.draw()
+
+        plt.show()
 
     def save_data(self):
-        with open('scale.csv', 'wb') as f:
+        with open(join('results', 'scale.csv'), 'w') as f:
             writer = csv.writer(f)
-            writer.writerow(self.data.keys())
+            writer.writerow(list(self.data.keys()))
             writer.writerows(zip(*self.data.values()))
 
 if __name__ == '__main__':
-    dirs = ['boat']
-    test = RepeatabilityTest(dirs, 'pgm')
+    dirs = PerformanceTest.get_dirs_from_argv()
+    test = RepeatabilityTest(dirs, ('pgm', 'ppm'))
 
     test.run_tests()
+    test.show_plots()
     test.save_data()
