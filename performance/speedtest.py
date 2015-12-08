@@ -11,7 +11,6 @@ from matplotlib import pyplot as plt
 import numpy as np
 
 from performancetest import PerformanceTest
-from utils import get_dirs_from_argv
 
 
 class SpeedTest(PerformanceTest):
@@ -69,7 +68,7 @@ class SpeedTest(PerformanceTest):
             writer.writerows(zip(*self.nkps.values()))
 
 if __name__ == '__main__':
-    dirs = get_dirs_from_argv()
+    dirs = PerformanceTest.get_dirs_from_argv()
     test = SpeedTest(dirs, ('pgm', 'ppm'))
 
     test.run_tests()

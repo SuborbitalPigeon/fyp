@@ -1,6 +1,8 @@
 from abc import ABCMeta, abstractmethod
 import itertools
-import os
+from os import listdir
+from os.path import isdir, join
+import sys
 
 import cv2
 from cv2 import xfeatures2d
@@ -17,7 +19,7 @@ class PerformanceTest(metaclass=ABCMeta):
             A tuple containing the file extensions to allow for test images.
 
         """
-        self.files = [os.path.join(dir, file) for dir in dirs for file in os.listdir(dir) if file.endswith(fileexts)]
+        self.files = [join(dir, file) for dir in dirs for file in listdir(dir) if file.endswith(fileexts)]
 
         self.detectors = ['AKAZE', 'BRISK', 'FAST', 'GFTT', 'KAZE', 'MSER', 'ORB', 'SIFT', 'SURF', 'Star'] # missing: 'LUCID'
         self.descriptors = ['AKAZE', 'BRISK', 'FREAK', 'KAZE', 'ORB', 'SIFT', 'SURF']
@@ -133,3 +135,11 @@ class PerformanceTest(metaclass=ABCMeta):
 
         """
         pass
+
+    @staticmethod
+    def get_dirs_from_argv():
+        if len(sys.argv) < 2:
+            raise ValueError("No directories given")
+        dirs = [dir for dir in sys.argv[1:] if isdir(dir)]
+        return dirs
+
