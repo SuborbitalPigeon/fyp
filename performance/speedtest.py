@@ -56,7 +56,7 @@ class SpeedTest(PerformanceTest):
             labels = [l.split('/')[1] for l in graphdict.keys()] # only descriptor bit
             data = list(graphdict.values())
             plt.figure()
-            plt.boxplot(data, labels=labels)
+            plt.boxplot(data, labels=labels, showmeans=True)
             plt.title("Detector = {}".format(detector))
             plt.xticks(rotation=45)
             plt.xlabel("Descriptor")
