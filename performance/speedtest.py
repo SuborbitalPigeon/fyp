@@ -3,8 +3,7 @@
 import csv
 from collections import OrderedDict
 import itertools
-from os.path import isdir, join
-import sys
+from os.path import join
 import time
 
 import cv2
@@ -12,6 +11,8 @@ from matplotlib import pyplot as plt
 import numpy as np
 
 from performancetest import PerformanceTest
+from utils import get_dirs_from_argv
+
 
 class SpeedTest(PerformanceTest):
     def __init__(self, dirs, fileexts):
@@ -68,10 +69,7 @@ class SpeedTest(PerformanceTest):
             writer.writerows(zip(*self.nkps.values()))
 
 if __name__ == '__main__':
-    if len(sys.argv) < 2:
-        raise ValueError("No directories given")
-
-    dirs = [dir for dir in sys.argv[1:] if isdir(dir)]
+    dirs = get_dirs_from_argv()
     test = SpeedTest(dirs, ('pgm', 'ppm'))
 
     test.run_tests()
