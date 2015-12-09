@@ -97,24 +97,23 @@ class RepeatabilityTest(PerformanceTest):
 
     def show_plots(self):
         ytick = FuncFormatter(self._percent_format)
+        fnames = [f.split('/')[1] for f in self.files[1:]] # filenames
 
         # One graph per detector
         for detector in self.detectors:
-            graphdict = OrderedDict()
+            plt.figure()
+
             for key, val in self.data.items():
                 if key.startswith(detector):
-                    graphdict[key] = val
+                    plt.plot(val, label=key.split('/')[1])
 
-            labels = [l.split('/')[1] for l in graphdict.keys()] # only descriptor bit
-            data = list(graphdict.values())
-            plt.figure()
-            plt.boxplot(data, labels=labels)
             plt.title("Detector = {}".format(detector))
-            plt.xticks(rotation=45)
-            plt.xlabel("Descriptor")
+            plt.xticks(np.arange(len(fnames)), fnames)
+            plt.xlabel("Image")
             plt.gca().yaxis.set_major_formatter(ytick)
             plt.ylabel("Repeatability")
             plt.ylim(0, 1) # 0 % -- 100 %
+            plt.legend()
             plt.draw()
             plt.savefig(join("results", "repeatability", detector.lower() + ".pdf"))
 
