@@ -114,8 +114,9 @@ class RepeatabilityTest(PerformanceTest):
             plt.xlabel("Descriptor")
             plt.gca().yaxis.set_major_formatter(ytick)
             plt.ylabel("Repeatability")
-            plt.ylim(0, 1)
+            plt.ylim(0, 1) # 0 % -- 100 %
             plt.draw()
+            plt.savefig(join("results", "repeatability", detector.lower() + ".pdf"))
 
         plt.show()
 

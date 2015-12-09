@@ -2,7 +2,6 @@
 
 import csv
 from collections import OrderedDict
-import itertools
 from os.path import join
 import time
 
@@ -62,6 +61,7 @@ class SpeedTest(PerformanceTest):
             plt.xlabel("Descriptor")
             plt.ylabel("FPS")
             plt.draw()
+            plt.savefig(join("results", "fps", detector.lower() + ".pdf"))
 
         plt.show()
 
