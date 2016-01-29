@@ -21,8 +21,10 @@ class PerformanceTest(metaclass=ABCMeta):
         """
         self.files = [join(dir, file) for dir in dirs for file in listdir(dir) if file.endswith(fileexts)]
 
-        self.detectors = ['AKAZE', 'BRISK', 'FAST', 'GFTT', 'KAZE', 'MSER', 'ORB', 'SIFT', 'SURF', 'Star'] # missing: 'LUCID'
-        self.descriptors = ['AKAZE', 'BRISK', 'FREAK', 'KAZE', 'ORB', 'SIFT', 'SURF']
+        self.detectors = ['Agast', 'AKAZE', 'BRISK', 'Fast', 'GFTT', 'KAZE', 'MSER', 'ORB']
+        self.detectors += ['SIFT', 'SURF', 'Star'] # xfeatures2d module
+        self.descriptors = ['AKAZE', 'BRISK', 'KAZE', 'ORB']
+        self.descriptors += ['DAISY', 'FREAK', 'LATCH', 'SIFT', 'SURF'] # xfeatures2d module, removed 'BRIEF', 'LUCID'
 
     def _create_detector_descriptor(self, detector, descriptor):
         if detector not in self.detectors:
@@ -30,11 +32,13 @@ class PerformanceTest(metaclass=ABCMeta):
         if descriptor not in self.descriptors:
             raise ValueError("Unsupported descriptor")
 
-        if detector is 'AKAZE':
+        if detector is 'Agast':
+            det = cv2.AgastFeatureDetector_create()
+        elif detector is 'AKAZE':
             det = cv2.AKAZE_create()
         elif detector is 'BRISK':
             det = cv2.BRISK_create()
-        elif detector is 'FAST':
+        elif detector is 'Fast':
             det = cv2.FastFeatureDetector_create()
         elif detector is 'GFTT':
             det = cv2.GFTTDetector_create()
@@ -44,6 +48,9 @@ class PerformanceTest(metaclass=ABCMeta):
             det = cv2.MSER_create()
         elif detector is 'ORB':
             det = cv2.ORB_create()
+
+        elif detector is 'MSD':
+            det = xfeatures2d.MSDDetector_create()
         elif detector is 'SIFT':
             det = xfeatures2d.SIFT_create()
         elif detector is 'SURF':
@@ -69,6 +76,15 @@ class PerformanceTest(metaclass=ABCMeta):
                 return None, None
         elif descriptor is 'ORB':
             desc = cv2.ORB_create()
+
+        elif descriptor is 'BRIEF':
+            desc = cv2.BRIEF_create()
+        elif descriptor is 'DAISY':
+            desc = xfeatures2d.DAISY_create()
+        elif descriptor is 'FREAK':
+            desc = xfeatures2d.FREAK_create()
+        elif descriptor is 'LATCH':
+            desc = xfeatures2d.LATCH_create()
         elif descriptor is 'SIFT':
             desc = xfeatures2d.SIFT_create()
         elif descriptor is 'SURF':
