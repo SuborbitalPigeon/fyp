@@ -83,9 +83,10 @@ class RepeatabilityTest(PerformanceTest):
 
                 tpts = np.vstack(tpts)
                 pts = np.vstack(pts)
-                dist = distance.cdist(pts, tpts)
-                kps.append(len(dist)) # total evaulated keypoints
-                ckps.append(np.sum(np.any(dist < THRESHOLD, axis=1))) # corresponding keypoints
+                dist = distance.cdist(pts, tpts).min(axis=1)
+
+                kps.append(len(dist)) # total evaluated keypoints
+                ckps.append(np.sum(dist < THRESHOLD)) # corresponding keypoints
 
         if len(kps) > 0:
             self.data[label] = np.true_divide(ckps, kps)
