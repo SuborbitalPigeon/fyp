@@ -116,7 +116,7 @@ class RepeatabilityTest(PerformanceTest):
         #plt.show()
 
     def save_data(self):
-        with open(join('results', 'scale.csv'), 'w') as f:
+        with open(join('results', 'repeat.csv'), 'w') as f:
             writer = csv.writer(f)
             writer.writerow(list(self.data.keys()))
             writer.writerows(zip(*self.data.values()))
