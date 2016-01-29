@@ -43,7 +43,7 @@ class RepeatabilityTest(PerformanceTest):
 
         return ret
 
-    def run_test(self, detector, descriptor, label):
+    def run_test(self, label, detector):
         kps = []
         ckps = []
         pattern = re.compile('(\w+)/img(\d).(\w+)')
@@ -53,7 +53,7 @@ class RepeatabilityTest(PerformanceTest):
             (dir, num, ext) = match.groups()
 
             image = cv2.imread(file, 0)
-            (keypoints, descriptors) = self.get_keypoints(image, detector, descriptor)
+            keypoints = self.get_keypoints(image, detector)
 
             if num is '1':
                 basepts = [point.pt for point in keypoints]
@@ -105,8 +105,8 @@ class RepeatabilityTest(PerformanceTest):
             plt.figure()
 
             for key, val in self.data.items():
-                if key.startswith(detector):
-                    plt.plot(val, label=key.split('/')[1])
+                if key is detector:
+                    plt.plot(val)
 
             plt.title("Detector = {}".format(detector))
             plt.xticks(np.arange(len(fnames)), fnames)
@@ -114,11 +114,10 @@ class RepeatabilityTest(PerformanceTest):
             plt.gca().yaxis.set_major_formatter(ytick)
             plt.ylabel("Repeatability")
             plt.ylim(0, 1) # 0 % -- 100 %
-            plt.legend()
             plt.draw()
             plt.savefig(join("results", "repeatability", detector.lower() + ".pdf"))
 
-        plt.show()
+        #plt.show()
 
     def save_data(self):
         with open(join('results', 'scale.csv'), 'w') as f:
@@ -130,6 +129,6 @@ if __name__ == '__main__':
     dirs = PerformanceTest.get_dirs_from_argv()
     test = RepeatabilityTest(dirs, ('pgm', 'ppm'))
 
-    test.run_tests()
+    test.run_tests_only_detector()
     test.show_plots()
     test.save_data()

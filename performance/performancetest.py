@@ -26,12 +26,7 @@ class PerformanceTest(metaclass=ABCMeta):
         self.descriptors = ['AKAZE', 'BRISK', 'KAZE', 'ORB']
         self.descriptors += ['DAISY', 'FREAK', 'LATCH', 'SIFT', 'SURF'] # xfeatures2d module, removed 'BRIEF', 'LUCID'
 
-    def _create_detector_descriptor(self, detector, descriptor):
-        if detector not in self.detectors:
-            raise ValueError("Unsupported detector")
-        if descriptor not in self.descriptors:
-            raise ValueError("Unsupported descriptor")
-
+    def _create_detector_descriptor(self, detector, descriptor=None):
         if detector is 'Agast':
             det = cv2.AgastFeatureDetector_create()
         elif detector is 'AKAZE':
@@ -59,6 +54,10 @@ class PerformanceTest(metaclass=ABCMeta):
             det = xfeatures2d.StarDetector_create()
         else:
             raise ValueError("Unsupported detector")
+
+        # Detector only case
+        if descriptor is None:
+            return det
 
         if descriptor is 'AKAZE': # AKAZE only allows AKAZE or KAZE detectors
             if detector is 'AKAZE' or detector is 'KAZE':
@@ -94,9 +93,16 @@ class PerformanceTest(metaclass=ABCMeta):
 
         return (det, desc)
 
-    def get_keypoints(self, image, detector, descriptor):
+    def get_keypoints(self, image, detector):
         try:
             keypoints = detector.detect(image)
+        except:
+            return ([])
+        else:
+            return keypoints
+
+    def compute_descriptors(self, detector, descriptor):
+        try:
             (keypoints, descriptors) = descriptor.compute(image, keypoints)
         except:
             return ([], [])
@@ -120,20 +126,29 @@ class PerformanceTest(metaclass=ABCMeta):
 
             self.run_test(det, desc, label)
 
+    def run_tests_only_detector(self):
+        count = 0
+        for detector in self.detectors:
+            count += 1
+            print("Running test {}/{} - {}".format(count, len(self.detectors), detector))
+
+            det = self._create_detector_descriptor(detector)
+            self.run_test(detector, det)
+
     @abstractmethod
-    def run_test(self, detector, descriptor, label):
+    def run_test(self, label, detector, descriptor=None):
         """ Run a test on one detector/descriptor combination.
 
         Should not be called manually.
 
         Parameters
         ----------
+        label: str
+            Label to give this combination.
         detector : str
             Name of the detector to use.
         descriptor : str
             Name of the descriptor to use.
-        label : str
-            Label to give this combination.
 
         """
         pass

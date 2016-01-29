@@ -28,14 +28,15 @@ class SpeedTest(PerformanceTest):
         self.times = OrderedDict()
         self.nkps = OrderedDict()
 
-    def run_test(self, detector, descriptor, label):
+    def run_test(self, label, detector, descriptor):
         times = []
         nkps = []
 
         for file in self.files:
             image = cv2.imread(file, 0)
             start = time.clock()
-            (keypoints, descriptors) = self.get_keypoints(image, detector, descriptor)
+            keypoints = self.get_keypoints(image, detector)
+            (keypoints, descriptors) = self.get_descriptors(image, detector, descriptor)
             end = time.clock()
 
             times.append(1 / (end - start))
@@ -63,7 +64,7 @@ class SpeedTest(PerformanceTest):
             plt.draw()
             plt.savefig(join("results", "fps", detector.lower() + ".pdf"))
 
-        plt.show()
+        #plt.show()
 
     def save_data(self):
         # FPS CSV
