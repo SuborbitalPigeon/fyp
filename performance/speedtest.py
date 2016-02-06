@@ -36,8 +36,9 @@ class SpeedTest(PerformanceTest):
             label = "{}/{}".format(detector, descriptor)
             print("Running test {}/{}  - {}/{}".format(count, len(self.detectors) * len(self.descriptors), detector, descriptor))
 
-            det, desc = self.create_detector_descriptor(detector, descriptor)
-            if det == None or desc == None:
+            det = self.create_detector(detector)
+            desc = self.create_descriptor(descriptor, detector)
+            if desc == None:
                 print("Invalid combination - {}/{}".format(detector, descriptor))
                 continue
 
@@ -51,7 +52,7 @@ class SpeedTest(PerformanceTest):
             image = cv2.imread(file, 0)
             start = time.clock()
             keypoints = self.get_keypoints(image, detector)
-            (keypoints, descriptors) = self.get_descriptors(image, descriptor)
+            (keypoints, descriptors) = self.get_descriptors(image, keypoints, descriptor)
             end = time.clock()
 
             times.append(1 / (end - start))

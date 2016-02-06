@@ -1,5 +1,4 @@
 from abc import ABCMeta, abstractmethod
-import itertools
 from os import listdir
 from os.path import isdir, join
 import sys
@@ -26,15 +25,13 @@ class PerformanceTest(metaclass=ABCMeta):
         self.descriptors = ['AKAZE', 'BRISK', 'KAZE', 'ORB']
         self.descriptors += ['DAISY', 'FREAK', 'LATCH', 'SIFT', 'SURF'] # xfeatures2d module, removed 'BRIEF', 'LUCID'
 
-    def create_detector_descriptor(self, detector, descriptor=None):
-        """ Create detector and optionally descriptor object.
+    def create_detector(self, detector):
+        """ Create detector object.
 
         Parameters
         ----------
         detector : str
             The detector type to create.
-        descriptor : str, optional
-            An optional descriptor type to create.
         """
         if detector is 'Agast':
             det = cv2.AgastFeatureDetector_create()
@@ -64,15 +61,24 @@ class PerformanceTest(metaclass=ABCMeta):
         else:
             raise ValueError("Unsupported detector")
 
-        # Detector only case
-        if descriptor is None:
-            return det
+        return det
 
+
+    def create_descriptor(self, descriptor, detector):
+        """ Create descriptor object.
+
+        Parameters
+        ----------
+        descriptor : str
+            An optional descriptor type to create.
+        detector: str
+            Detector name, to check if valid combination.
+        """
         if descriptor is 'AKAZE': # AKAZE only allows AKAZE or KAZE detectors
             if detector is 'AKAZE' or detector is 'KAZE':
                 desc = cv2.AKAZE_create()
             else:
-                return None, None
+                return None
         elif descriptor is 'BRISK':
             desc = cv2.BRISK_create()
         elif descriptor is 'FREAK':
@@ -81,10 +87,9 @@ class PerformanceTest(metaclass=ABCMeta):
             if detector is 'AKAZE' or detector is 'KAZE':
                 desc = cv2.KAZE_create()
             else:
-                return None, None
+                return None
         elif descriptor is 'ORB':
             desc = cv2.ORB_create()
-
         elif descriptor is 'BRIEF':
             desc = cv2.BRIEF_create()
         elif descriptor is 'DAISY':
@@ -100,7 +105,7 @@ class PerformanceTest(metaclass=ABCMeta):
         else:
             raise ValueError("Unsupported descriptor")
 
-        return (det, desc)
+        return desc
 
     def get_keypoints(self, image, detector):
         """ Get the keypoints for an image
@@ -119,13 +124,15 @@ class PerformanceTest(metaclass=ABCMeta):
         else:
             return keypoints
 
-    def get_descriptors(self, image, descriptor):
+    def get_descriptors(self, image, keypoints, descriptor):
         """ Get the descriptors for an image
 
         Parameters
         ----------
         image : array_like
             The image to run the descriptor on.
+        keypoints: array_like
+            The keypoints found in the image.
         descriptor: DescriptorExtractor
             The descriptor object.
         """

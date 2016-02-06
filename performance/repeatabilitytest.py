@@ -48,7 +48,7 @@ class RepeatabilityTest(PerformanceTest):
             count += 1
             print("Running test {}/{} - {}".format(count, len(self.detectors), detector))
 
-            det = self.create_detector_descriptor(detector)
+            det = self.create_detector(detector)
             self.run_test(detector, det)
 
     def run_test(self, label, detector):
