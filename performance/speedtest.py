@@ -2,6 +2,7 @@
 
 import csv
 from collections import OrderedDict
+import itertools
 from os.path import join
 import time
 
@@ -28,6 +29,20 @@ class SpeedTest(PerformanceTest):
         self.times = OrderedDict()
         self.nkps = OrderedDict()
 
+    def run_tests(self):
+        count = 0
+        for detector, descriptor in itertools.product(self.detectors, self.descriptors):
+            count += 1
+            label = "{}/{}".format(detector, descriptor)
+            print("Running test {}/{}  - {}/{}".format(count, len(self.detectors) * len(self.descriptors), detector, descriptor))
+
+            det, desc = self.create_detector_descriptor(detector, descriptor)
+            if det == None or desc == None:
+                print("Invalid combination - {}/{}".format(detector, descriptor))
+                continue
+
+            self.run_test(label, det, desc)
+
     def run_test(self, label, detector, descriptor):
         times = []
         nkps = []
@@ -36,7 +51,7 @@ class SpeedTest(PerformanceTest):
             image = cv2.imread(file, 0)
             start = time.clock()
             keypoints = self.get_keypoints(image, detector)
-            (keypoints, descriptors) = self.get_descriptors(image, detector, descriptor)
+            (keypoints, descriptors) = self.get_descriptors(image, descriptor)
             end = time.clock()
 
             times.append(1 / (end - start))

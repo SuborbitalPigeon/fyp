@@ -26,7 +26,16 @@ class PerformanceTest(metaclass=ABCMeta):
         self.descriptors = ['AKAZE', 'BRISK', 'KAZE', 'ORB']
         self.descriptors += ['DAISY', 'FREAK', 'LATCH', 'SIFT', 'SURF'] # xfeatures2d module, removed 'BRIEF', 'LUCID'
 
-    def _create_detector_descriptor(self, detector, descriptor=None):
+    def create_detector_descriptor(self, detector, descriptor=None):
+        """ Create detector and optionally descriptor object.
+
+        Parameters
+        ----------
+        detector : str
+            The detector type to create.
+        descriptor : str, optional
+            An optional descriptor type to create.
+        """
         if detector is 'Agast':
             det = cv2.AgastFeatureDetector_create()
         elif detector is 'AKAZE':
@@ -94,6 +103,15 @@ class PerformanceTest(metaclass=ABCMeta):
         return (det, desc)
 
     def get_keypoints(self, image, detector):
+        """ Get the keypoints for an image
+
+        Parameters
+        ----------
+        image : array_like
+            The image to run the detector on.
+        detector : cv2.FeatureDetector
+            The detector object.
+        """
         try:
             keypoints = detector.detect(image)
         except:
@@ -101,7 +119,16 @@ class PerformanceTest(metaclass=ABCMeta):
         else:
             return keypoints
 
-    def compute_descriptors(self, detector, descriptor):
+    def get_descriptors(self, image, descriptor):
+        """ Get the descriptors for an image
+
+        Parameters
+        ----------
+        image : array_like
+            The image to run the descriptor on.
+        descriptor: DescriptorExtractor
+            The descriptor object.
+        """
         try:
             (keypoints, descriptors) = descriptor.compute(image, keypoints)
         except:
@@ -109,49 +136,11 @@ class PerformanceTest(metaclass=ABCMeta):
         else:
             return (keypoints, descriptors)
 
+    @abstractmethod
     def run_tests(self):
         """ Run the tests in the benchmark.
 
         """
-        count = 0
-        for detector, descriptor in itertools.product(self.detectors, self.descriptors):
-            count += 1
-            label = "{}/{}".format(detector, descriptor)
-            print("Running test {}/{}  - {}/{}".format(count, len(self.detectors) * len(self.descriptors), detector, descriptor))
-
-            det, desc = self._create_detector_descriptor(detector, descriptor)
-            if det == None or desc == None:
-                print("Invalid combination - {}/{}".format(detector, descriptor))
-                continue
-
-            self.run_test(det, desc, label)
-
-    def run_tests_only_detector(self):
-        count = 0
-        for detector in self.detectors:
-            count += 1
-            print("Running test {}/{} - {}".format(count, len(self.detectors), detector))
-
-            det = self._create_detector_descriptor(detector)
-            self.run_test(detector, det)
-
-    @abstractmethod
-    def run_test(self, label, detector, descriptor=None):
-        """ Run a test on one detector/descriptor combination.
-
-        Should not be called manually.
-
-        Parameters
-        ----------
-        label: str
-            Label to give this combination.
-        detector : str
-            Name of the detector to use.
-        descriptor : str
-            Name of the descriptor to use.
-
-        """
-        pass
 
     @abstractmethod
     def show_plots(self):

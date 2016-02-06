@@ -43,6 +43,15 @@ class RepeatabilityTest(PerformanceTest):
 
         return ret
 
+    def run_tests(self):
+        count = 0
+        for detector in self.detectors:
+            count += 1
+            print("Running test {}/{} - {}".format(count, len(self.detectors), detector))
+
+            det = self.create_detector_descriptor(detector)
+            self.run_test(detector, det)
+
     def run_test(self, label, detector):
         kps = []
         ckps = []
@@ -100,8 +109,12 @@ class RepeatabilityTest(PerformanceTest):
         ytick = FuncFormatter(self._percent_format)
         fnames = [f.split('/')[1] for f in self.files[1:]] # filenames
 
+        # TODO Linestyle changes?
+        colour = iter(plt.cm.jet(np.linspace(0,1,len(self.data))))
+
         for key, val in self.data.items():
-            plt.plot(val, label=key)
+            c = next(colour)
+            plt.plot(val, label=key, c=c)
 
         plt.title("Repeatability")
         plt.xticks(np.arange(len(fnames)), fnames)
@@ -109,11 +122,9 @@ class RepeatabilityTest(PerformanceTest):
         plt.gca().yaxis.set_major_formatter(ytick)
         plt.ylabel("Repeatability")
         plt.ylim(0, 1) # 0 % -- 100 %
-        plt.legend()
+        plt.legend(loc='best', framealpha=0.5)
         plt.draw()
         plt.savefig(join("results", "repeatability.pdf"))
-
-        #plt.show()
 
     def save_data(self):
         with open(join('results', 'repeat.csv'), 'w') as f:
@@ -125,6 +136,6 @@ if __name__ == '__main__':
     dirs = PerformanceTest.get_dirs_from_argv()
     test = RepeatabilityTest(dirs, ('pgm', 'ppm'))
 
-    test.run_tests_only_detector()
+    test.run_tests()
     test.show_plots()
     test.save_data()
