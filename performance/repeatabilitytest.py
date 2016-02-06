@@ -33,13 +33,12 @@ class RepeatabilityTest(PerformanceTest):
 
     @staticmethod
     def _point_in_image(pt, image):
-        # Checks the image at this point, and returns True if this is totally black
         (x, y) = pt
 
         try:
-            ret = np.any(image[x][y] == np.array([0, 0, 0]))
-        except IndexError: # if point is outside bounds of image
-            return False
+            ret = image[x][y] != 0 # If mask rectangle is visible
+        except IndexError:
+            return False # Outside the mask rectangle image boundaries
 
         return ret
 
@@ -53,8 +52,7 @@ class RepeatabilityTest(PerformanceTest):
             self.run_test(detector, det)
 
     def run_test(self, label, detector):
-        kps = []
-        ckps = []
+        repeatability = []
         pattern = re.compile('(\w+)/img(\d).(\w+)')
 
         for file in self.files:
@@ -66,14 +64,16 @@ class RepeatabilityTest(PerformanceTest):
 
             if num is '1':
                 basepts = [point.pt for point in keypoints]
-                baseimg = image
             else:
                 pts = [] # current image's keypoints
                 tpts = [] # transformed base keypoints
 
-                size = image.shape[1::-1]
                 mat = np.loadtxt(os.path.join(dir, 'H1to{}p'.format(num)))
-                rimage = cv2.warpPerspective(baseimg, mat, size) # for filtering keypoints
+
+                # Create rectangle which is warped for purposes of boundary checking
+                rectangle = np.empty(image.shape, np.uint8)
+                rectangle.fill(255)
+                rimage = cv2.warpPerspective(rectangle, mat, image.shape[1::-1])
 
                 # This image's keypoints
                 for point in keypoints:
@@ -94,11 +94,9 @@ class RepeatabilityTest(PerformanceTest):
                 pts = np.vstack(pts)
                 dist = distance.cdist(pts, tpts).min(axis=1)
 
-                kps.append(len(dist)) # total evaluated keypoints
-                ckps.append(np.sum(dist < THRESHOLD)) # corresponding keypoints
+                repeatability.append(np.sum(dist < THRESHOLD) / len(tpts))
 
-        if len(kps) > 0:
-            self.data[label] = np.true_divide(ckps, kps)
+            self.data[label] = repeatability
 
     @staticmethod
     def _percent_format(y, position):
@@ -116,11 +114,11 @@ class RepeatabilityTest(PerformanceTest):
             c = next(colour)
             plt.plot(val, label=key, c=c)
 
-        plt.title("Repeatability")
+        plt.title("10-Repeatability")
         plt.xticks(np.arange(len(fnames)), fnames)
         plt.xlabel("Image")
         plt.gca().yaxis.set_major_formatter(ytick)
-        plt.ylabel("Repeatability")
+        plt.ylabel("10-Repeatability")
         plt.ylim(0, 1) # 0 % -- 100 %
         plt.legend(loc='best', framealpha=0.5)
         plt.draw()
