@@ -23,7 +23,7 @@ class PerformanceTest(metaclass=ABCMeta):
         self.detectors = ['Agast', 'AKAZE', 'BRISK', 'Fast', 'GFTT', 'KAZE', 'MSER', 'ORB']
         self.detectors += ['SIFT', 'SURF', 'Star'] # xfeatures2d module
         self.descriptors = ['AKAZE', 'BRISK', 'KAZE', 'ORB']
-        self.descriptors += ['DAISY', 'FREAK', 'LATCH', 'SIFT', 'SURF'] # xfeatures2d module, removed 'BRIEF', 'LUCID'
+        self.descriptors += ['BRIEF', 'DAISY', 'FREAK', 'LATCH', 'SIFT', 'SURF'] # Removed: LUCID
 
     def create_detector(self, detector):
         """ Create detector object.
@@ -91,7 +91,7 @@ class PerformanceTest(metaclass=ABCMeta):
         elif descriptor is 'ORB':
             desc = cv2.ORB_create()
         elif descriptor is 'BRIEF':
-            desc = cv2.BRIEF_create()
+            desc = xfeatures2d.BriefDescriptorExtractor_create()
         elif descriptor is 'DAISY':
             desc = xfeatures2d.DAISY_create()
         elif descriptor is 'FREAK':
