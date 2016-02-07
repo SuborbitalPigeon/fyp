@@ -4,7 +4,7 @@ import csv
 from collections import OrderedDict
 import itertools
 from os.path import join
-import time
+from time import process_time
 
 import cv2
 from matplotlib import pyplot as plt
@@ -50,12 +50,12 @@ class SpeedTest(PerformanceTest):
 
         for file in self.files:
             image = cv2.imread(file, 0)
-            start = time.clock()
+            start = process_time()
             keypoints = self.get_keypoints(image, detector)
             (keypoints, descriptors) = self.get_descriptors(image, keypoints, descriptor)
-            end = time.clock()
+            end = process_time()
 
-            times.append(1 / (end - start))
+            times.append((end - start) * 1000) # Milliseconds
             nkps.append(len(keypoints))
 
         self.times[label] = np.array(times)
@@ -76,15 +76,15 @@ class SpeedTest(PerformanceTest):
             plt.title("Detector = {}".format(detector))
             plt.xticks(rotation=45)
             plt.xlabel("Descriptor")
-            plt.ylabel("FPS")
+            plt.ylabel("Time taken / ms")
             plt.draw()
-            plt.savefig(join("results", "fps", detector.lower() + ".pdf"))
+            plt.savefig(join("results", "speed", detector.lower() + ".pdf"))
 
         #plt.show()
 
     def save_data(self):
         # FPS CSV
-        with open(join('results', 'fps.csv'), 'w') as f:
+        with open(join('results', 'speed.csv'), 'w') as f:
             writer = csv.writer(f)
             writer.writerow(list(self.times.keys()))
             writer.writerows(zip(*self.times.values()))
