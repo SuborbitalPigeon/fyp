@@ -5,25 +5,45 @@ import sys
 
 import cv2
 from cv2 import xfeatures2d
+import numpy as np
 
 class PerformanceTest(metaclass=ABCMeta):
-    def __init__(self, dirs, fileexts):
-        """ Base class for benchmark implementations.
+    """
+    Accepted kwargs
 
-        Parameters
-        ----------
-        dirs : List[str]
-            A list of directories to scan.
-        filexts : Tuple[str]
-            A tuple containing the file extensions to allow for test images.
+    dirs: a list of dirs to scan for files
+    fileexts:
+    """
+    def __init__(self, **kwargs):
 
-        """
-        self.files = [join(dir, file) for dir in dirs for file in listdir(dir) if file.endswith(fileexts)]
+        if 'dirs' in kwargs and 'fileexts' in kwargs:
+            dirs = kwargs['dirs']
+            fileexts = kwargs['fileexts']
+            self.files = [join(dir, file) for dir in dirs for file in listdir(dir) if file.endswith(fileexts)]
 
         self.detectors = ['Agast', 'AKAZE', 'BRISK', 'Fast', 'GFTT', 'KAZE', 'MSER', 'ORB']
         self.detectors += ['SIFT', 'SURF', 'Star'] # xfeatures2d module
         self.descriptors = ['AKAZE', 'BRISK', 'KAZE', 'ORB']
         self.descriptors += ['BRIEF', 'DAISY', 'FREAK', 'LATCH', 'SIFT', 'SURF'] # Removed: LUCID
+
+    @staticmethod
+    def transform_point(kp, h):
+        p = np.asarray(kp.pt).reshape(2, 1)
+        p = np.vstack((p, 1))  # Converts to homogenous coords
+        d = np.dot(h, p)       # h * p
+        d = (d / d[2])[0:2] # Converts from homogenous coords
+        return cv2.KeyPoint(d[0], d[1], kp.size)
+
+    @staticmethod
+    def point_in_image(kp, mask):
+        pt = np.asarray(kp.pt).reshape(2, 1)
+
+        try:
+            ret = mask[pt[0][0]][pt[1][0]]!= 0 # If mask rectangle is visible
+        except IndexError:
+            return False # Outside the mask rectangle image boundaries
+
+        return ret
 
     def create_detector(self, detector):
         """ Create detector object.
@@ -169,4 +189,3 @@ class PerformanceTest(metaclass=ABCMeta):
             raise ValueError("No directories given")
         dirs = [dir for dir in sys.argv[1:] if isdir(dir)]
         return dirs
-

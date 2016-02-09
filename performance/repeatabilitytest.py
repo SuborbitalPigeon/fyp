@@ -18,29 +18,10 @@ THRESHOLD = 10
 
 
 class RepeatabilityTest(PerformanceTest):
-    def __init__(self, dirs, fileexts):
-        super().__init__(dirs, fileexts)
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
 
         self.data = OrderedDict()
-
-    @staticmethod
-    def _transform_point(p, h):
-        # Takes a row vector, and returns a column vector
-        p = np.vstack((p, 1))  # Converts to homogenous coords
-        d = np.dot(h, p)       # h * p
-        d = (d / d[2])[0:2]    # Converts from homogenous coords
-        return np.transpose(d)[0]
-
-    @staticmethod
-    def _point_in_image(pt, image):
-        (x, y) = pt
-
-        try:
-            ret = image[x][y] != 0 # If mask rectangle is visible
-        except IndexError:
-            return False # Outside the mask rectangle image boundaries
-
-        return ret
 
     def run_tests(self):
         count = 0
@@ -63,7 +44,7 @@ class RepeatabilityTest(PerformanceTest):
             keypoints = self.get_keypoints(image, detector)
 
             if num is '1':
-                basepts = [point.pt for point in keypoints]
+                basepts = keypoints
             else:
                 pts = [] # current image's keypoints
                 tpts = [] # transformed base keypoints
@@ -73,19 +54,18 @@ class RepeatabilityTest(PerformanceTest):
                 # Create rectangle which is warped for purposes of boundary checking
                 rectangle = np.empty(image.shape, np.uint8)
                 rectangle.fill(255)
-                rimage = cv2.warpPerspective(rectangle, mat, image.shape[1::-1])
+                mask = cv2.warpPerspective(rectangle, mat, image.shape[1::-1])
 
                 # This image's keypoints
                 for point in keypoints:
-                    if self._point_in_image(point.pt, rimage):
+                    if self.point_in_image(point, mask):
                         pts.append(point.pt)
 
                 # The base image's keypoints, projection required
                 for point in basepts:
-                    p = np.array([[point[0]], [point[1]]])
-                    tp = self._transform_point(p, mat)
-                    if self._point_in_image(tp, rimage):
-                        tpts.append(tp)
+                    tp = self.transform_point(point , mat)
+                    if self.point_in_image(tp, mask):
+                        tpts.append(tp.pt)
 
                 if len(pts) == 0:
                     continue
@@ -132,8 +112,7 @@ class RepeatabilityTest(PerformanceTest):
 
 if __name__ == '__main__':
     dirs = PerformanceTest.get_dirs_from_argv()
-    test = RepeatabilityTest(dirs, ('pgm', 'ppm'))
-
+    test = RepeatabilityTest(dirs=dirs, fileexts=('pgm', 'ppm'))
     test.run_tests()
     test.show_plots()
     test.save_data()

@@ -14,18 +14,8 @@ from performancetest import PerformanceTest
 
 
 class SpeedTest(PerformanceTest):
-    def __init__(self, dirs, fileexts):
-        """ Benchmark concerned with the raw speed of combinations of detector and descriptor.
-
-        Parameters
-        ----------
-        dirs : List[str]
-            A list of directories to scan.
-        filexts : Tuple[str]
-            A tuple containing the file extensions to allow for test images.
-
-        """
-        super().__init__(dirs, fileexts)
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
         self.times = OrderedDict()
         self.nkps = OrderedDict()
 
@@ -97,7 +87,7 @@ class SpeedTest(PerformanceTest):
 
 if __name__ == '__main__':
     dirs = PerformanceTest.get_dirs_from_argv()
-    test = SpeedTest(dirs, ('pgm', 'ppm'))
+    test = SpeedTest(dirs=dirs, filexts=('pgm', 'ppm'))
 
     test.run_tests()
     test.show_plots()
