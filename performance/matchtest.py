@@ -45,6 +45,35 @@ class MatchTest(PerformanceTest):
 
             self.run_test(label, det, desc)
 
+    def _get_overlap(self, kp1, kp2):
+        """ Get overlap between two keypoints
+
+        Parameters
+        ----------
+        kp1: cv2.KeyPoint
+            the first keypoint.
+        kp2: cv2.KeyPoint
+            the second keypoint.
+
+        Returns
+        ------
+        overlap: float
+            The overlap percentage
+        """
+        shape = self.baseimg.shape
+        H = self.h
+
+        img1 = np.zeros(shape, np.uint8)
+        cv2.circle(img1, (int(kp1.pt[0]), int(kp1.pt[1])), int(kp1.size / 2), 255, -1)
+        img1 = cv2.warpPerspective(img1, H, self.baseimg.shape[1::-1])
+
+        img2 = np.zeros(shape, np.uint8)
+        cv2.circle(img2, (int(kp2.pt[0]), int(kp2.pt[1])), int(kp2.size / 2), 255, -1)
+
+        union = cv2.add(img1, img2)
+        intersection = img1 & img2
+        return np.sum(intersection) / np.sum(union)
+
     def run_test(self, label, detector, descriptor):
         basekps = self.get_keypoints(self.baseimg, detector)
         basekps, basedes = self.get_descriptors(self.baseimg, basekps, descriptor)
@@ -65,32 +94,37 @@ class MatchTest(PerformanceTest):
         dists = [m.distance for m in matches]
         lower = np.min(dists)
         upper = np.max(dists)
+
         recall = []
         precision = []
+        corresponding = []
+
+        for m in matches:
+            basekp = basekps[m.trainIdx]
+            basekp = self.transform_point(basekp, self.h)
+            if self.point_in_image(basekp, mask):
+                corresponding.append(m)
 
         for t in np.linspace(lower, upper, 20):
-            overlaps = []
-            corresponding = 0
+            correct = 0
+            wrong = 0
 
-            for m in matches:
+            if len(corresponding) is 0:
+                continue
+            for m in corresponding:
                 basekp = basekps[m.trainIdx]
                 tkp = kps[m.queryIdx]
-                basekp = self.transform_point(basekp, self.h)
-                if self.point_in_image(basekp, mask):
-                    corresponding += 1
-                    if m.distance < t:
-                        overlaps.append(cv2.KeyPoint_overlap(basekp, tkp))
+                if m.distance < t:
+                    if self._get_overlap(basekp, tkp) > 0.5:
+                        correct += 1
+                    else:
+                        wrong += 1
 
-            if len(overlaps) is 0:
-                continue
-
-            correct = np.sum(np.asarray(overlaps) > 0.5)
-            wrong = np.sum(np.asarray(overlaps) <= 0.5)
-
-            recall.append(correct / corresponding)
-            precision.append(wrong / len(overlaps))
+            recall.append(correct / len(corresponding))
+            precision.append(wrong / len(matches))
 
         plt.plot(precision, recall, 'x')
+        plt.title(label)
         plt.xlabel("1 - precision")
         plt.xlim(xmin=0, xmax=1)
         plt.ylim(ymin=0, ymax=1)
