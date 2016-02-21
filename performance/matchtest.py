@@ -28,6 +28,10 @@ class MatchTest(PerformanceTest):
 
         self.recall = {}
         self.precision = {}
+        
+        self.mask = np.empty(self.baseimg.shape, np.uint8)
+        self.mask.fill(255)
+        self.mask = cv2.warpPerspective(self.mask, self.h, self.baseimg.shape[1::-1])
 
     def run_tests(self):
         count = 0
@@ -81,10 +85,6 @@ class MatchTest(PerformanceTest):
         kps = self.get_keypoints(self.timg, detector)
         kps, des = self.get_descriptors(self.timg, kps, descriptor)
 
-        mask = np.empty(self.baseimg.shape, np.uint8)
-        mask.fill(255)
-        mask = cv2.warpPerspective(mask, self.h, self.baseimg.shape[1::-1])
-
         if label == 'SIFT' or 'SURF':
             bf = cv2.BFMatcher(cv2.NORM_L2, crossCheck=True)
         else:
@@ -102,7 +102,7 @@ class MatchTest(PerformanceTest):
         for m in matches:
             basekp = basekps[m.trainIdx]
             basekp = self.transform_point(basekp, self.h)
-            if self.point_in_image(basekp, mask):
+            if self.point_in_image(basekp, self.mask):
                 corresponding.append(m)
 
         for t in np.linspace(lower, upper, 20):
