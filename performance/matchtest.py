@@ -123,16 +123,20 @@ class MatchTest(PerformanceTest):
             recall.append(correct / len(corresponding))
             precision.append(wrong / len(matches))
 
-        plt.plot(precision, recall, 'x')
-        plt.title(label)
-        plt.xlabel("1 - precision")
-        plt.xlim(xmin=0, xmax=1)
-        plt.ylim(ymin=0, ymax=1)
-        plt.ylabel("recall")
-        plt.show()
+        self.recall[label] = recall
+        self.precision[label] = precision
 
     def show_plots(self):
-        pass
+        for key in self.precision.keys():
+            plt.plot(self.precision[key], self.recall[key], label=key)
+
+        plt.xlabel("1-precision")
+        plt.xlim(xmin=0, xmax=1)
+        plt.ylabel("recall")
+        plt.ylim(ymin=0, ymax=1)
+        plt.legend(loc='best')
+        plt.draw()
+        plt.savefig(join("results", "precisionrecall.pdf"))
 
     def save_data(self):
         pass
