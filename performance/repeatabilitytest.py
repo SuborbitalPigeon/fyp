@@ -50,11 +50,7 @@ class RepeatabilityTest(PerformanceTest):
                 tpts = [] # transformed base keypoints
 
                 mat = np.loadtxt(os.path.join(dir, 'H1to{}p'.format(num)))
-
-                # Create rectangle which is warped for purposes of boundary checking
-                rectangle = np.empty(image.shape, np.uint8)
-                rectangle.fill(255)
-                mask = cv2.warpPerspective(rectangle, mat, image.shape[1::-1])
+                mask = self.create_mask(image.shape, mat)
 
                 # This image's keypoints
                 for point in keypoints:

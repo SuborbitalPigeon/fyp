@@ -28,6 +28,23 @@ class PerformanceTest(metaclass=ABCMeta):
 
     @staticmethod
     def transform_point(kp, h):
+        """
+        Transform a point by a homography.
+
+        Parameters
+        ----------
+        kp: cv2.KeyPoint
+            The keypoint to relocate
+        h: array_like
+            The homography matrix
+
+
+        Returns
+        -------
+        output: cv2.KeyPoint
+            A new keypoint in the new location. Doesn't change the scale of this
+            new keypoint.
+        """
         p = np.asarray(kp.pt).reshape(2, 1)
         p = np.vstack((p, 1))  # Converts to homogenous coords
         d = np.dot(h, p)       # h * p
@@ -44,6 +61,21 @@ class PerformanceTest(metaclass=ABCMeta):
             return False # Outside the mask rectangle image boundaries
 
         return ret
+
+    @staticmethod
+    def create_mask(shape, h):
+        """ Create image mask for boundary checking.
+
+        Parameters
+        ----------
+        shape: array_like
+            The shape of the image to create.
+        h: array_like
+            Homography being used.
+        """
+        mask = np.empty(shape, np.uint8)
+        mask.fill(255)
+        return cv2.warpPerspective(mask, h, shape[1::-1])
 
     def create_detector(self, detector):
         """ Create detector object.

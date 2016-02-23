@@ -28,10 +28,8 @@ class MatchTest(PerformanceTest):
 
         self.recall = {}
         self.precision = {}
-        
-        self.mask = np.empty(self.baseimg.shape, np.uint8)
-        self.mask.fill(255)
-        self.mask = cv2.warpPerspective(self.mask, self.h, self.baseimg.shape[1::-1])
+
+        self.mask = self.create_mask(self.baseimg.shape, self.h)
 
     def run_tests(self):
         count = 0
