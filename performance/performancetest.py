@@ -53,6 +53,15 @@ class PerformanceTest(metaclass=ABCMeta):
 
     @staticmethod
     def point_in_image(kp, mask):
+        """ Check if a point is in an image
+
+        Parameters
+        ---------
+        kp: cv2.KeyPoint
+            A keypoint to check for being in the image.
+        mask: array_like
+            A mask created with create_mask().
+        """
         pt = np.asarray(kp.pt).reshape(2, 1)
 
         try:
@@ -217,6 +226,9 @@ class PerformanceTest(metaclass=ABCMeta):
 
     @staticmethod
     def get_dirs_from_argv():
+        """ Get the directories from commandline arguments
+
+        """
         if len(sys.argv) < 2:
             raise ValueError("No directories given")
         dirs = [dir for dir in sys.argv[1:] if isdir(dir)]
