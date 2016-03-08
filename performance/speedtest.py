@@ -19,6 +19,8 @@ class SpeedTest(PerformanceTest):
         self.times = OrderedDict()
         self.nkps = OrderedDict()
 
+        self.images = [cv2.imread(image, 0) for image in self.files]
+
     def run_tests(self):
         count = 0
         for detector, descriptor in itertools.product(self.detectors, self.descriptors):
@@ -38,8 +40,7 @@ class SpeedTest(PerformanceTest):
         times = []
         nkps = []
 
-        for file in self.files:
-            image = cv2.imread(file, 0)
+        for image in self.images:
             start = process_time()
             keypoints = self.get_keypoints(image, detector)
             (keypoints, descriptors) = self.get_descriptors(image, keypoints, descriptor)
