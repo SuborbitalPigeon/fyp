@@ -16,9 +16,9 @@ class PerformanceTest(metaclass=ABCMeta):
     """
     def __init__(self, **kwargs):
 
-        if 'dirs' in kwargs and 'fileexts' in kwargs:
+        if 'dirs' in kwargs and 'filexts' in kwargs:
             dirs = kwargs['dirs']
-            fileexts = kwargs['fileexts']
+            fileexts = kwargs['filexts']
             self.files = [join(dir, file) for dir in dirs for file in listdir(dir) if file.endswith(fileexts)]
 
         self.detectors = ['Agast', 'AKAZE', 'BRISK', 'Fast', 'GFTT', 'KAZE', 'MSER', 'ORB']
