@@ -1,5 +1,3 @@
-*.o
-testwebcam
 *.csv
 __pycache__
 video/images/*
