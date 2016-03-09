@@ -10,4 +10,7 @@ cv2.namedWindow('output', cv2.WINDOW_NORMAL)
 while True:
     frame = controller.frame
     cv2.imshow('output', frame)
-    cv2.waitKey(40) # 40 ms = 25 fps
+
+    c = cv2.waitKey(40) # 40 ms = 25 fps
+    if c == ord('p'):
+        controller.paused = not controller.paused
