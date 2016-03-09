@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 FILE_PATTERN = "images/image%05d.png"
 
 import cv2
@@ -26,11 +24,7 @@ class VideoController(object):
             return self._saved_frame
         else:
             ret, img = self._cap.read()
+            if ret == False:
+                return None
             self._saved_frame = img
             return img
-
-if __name__ == '__main__':
-    controller = VideoController()
-    frame = controller.frame
-    plt.imshow(frame)
-    plt.show()
