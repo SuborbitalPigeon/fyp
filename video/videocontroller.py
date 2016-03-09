@@ -8,7 +8,8 @@ class VideoController(object):
         super().__init__()
 
         self._cap = cv2.VideoCapture(FILE_PATTERN)
-        self._paused = False
+        self._paused = True
+        ret, self._saved_frame = self._cap.read()
 
     @property
     def paused(self):
