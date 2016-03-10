@@ -38,22 +38,3 @@ class Tracking:
 
         H, mask = cv2.findHomography(apts, bpts, cv2.RANSAC, 3.0)
         return H
-
-if __name__ == '__main__':
-    tracking = Tracking()
-
-    img = cv2.imread('images/image00001.png', cv2.IMREAD_GRAYSCALE)
-    roi = np.array([[550, 375], [780, 550]])
-    obj = np.copy(img[roi[0,1]:roi[1, 1], roi[0, 0]:roi[1, 0]])
-
-    tracking.define_target(obj)
-    H = tracking.find_homography(img)
-
-    h,w = img.shape
-    pts = np.float32([ [0,0],[0,h-1],[w-1,h-1],[w-1,0] ]).reshape(-1,1,2)
-    dst = cv2.perspectiveTransform(pts,H)
-
-    img = cv2.polylines(img,[np.int32(dst)],True,255,3, cv2.LINE_AA)
-
-    plt.imshow(img)
-    plt.show()
