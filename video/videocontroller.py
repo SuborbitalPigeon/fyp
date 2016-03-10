@@ -9,7 +9,8 @@ class VideoController(object):
 
         self._cap = cv2.VideoCapture(FILE_PATTERN)
         self._paused = True
-        ret, self._saved_frame = self._cap.read()
+        ret, frame = self._cap.read()
+        self._saved_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
     @property
     def paused(self):
@@ -27,5 +28,7 @@ class VideoController(object):
             ret, img = self._cap.read()
             if ret == False:
                 return None
-            self._saved_frame = img
-            return img
+            else:
+                img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+                self._saved_frame = img
+                return img
