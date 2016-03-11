@@ -6,11 +6,10 @@ class Tracking:
     def __init__(self):
         self._orb = cv2.ORB_create()
 
-#        FLANN_INDEX_LSH = 6
-#        index_params = dict(algorithm = FLANN_INDEX_LSH, table_number = 6, key_size = 12, multi_probe_level = 1)
-#        search_params = dict(checks = 50)
-#        self._matcher = cv2.FlannBasedMatcher(index_params, search_params)
-        self._matcher = cv2.BFMatcher(cv2.NORM_HAMMING)
+        FLANN_INDEX_LSH = 6
+        index_params = dict(algorithm = FLANN_INDEX_LSH, table_number = 6, key_size = 12, multi_probe_level = 1)
+        search_params = dict(checks = 50)
+        self._matcher = cv2.FlannBasedMatcher(index_params, search_params)
 
     @property
     def target(self):

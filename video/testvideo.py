@@ -61,7 +61,7 @@ class UserInterface(object):
                 else:
                     cv2.imshow('output', frame)
 
-            c = cv2.waitKey(40) # 40 ms = 25 fps
+            c = cv2.waitKey(1)
             if c == ord('p'):
                 self._controller.paused = not self._controller.paused
                 if self._controller.paused:
