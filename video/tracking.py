@@ -1,10 +1,9 @@
 import cv2
 import numpy as np
-from matplotlib import pyplot as plt
 
 class Tracking:
     def __init__(self):
-        self._orb = cv2.ORB_create()
+        self._algo = cv2.AKAZE_create()
 
         FLANN_INDEX_LSH = 6
         index_params = dict(algorithm = FLANN_INDEX_LSH, table_number = 6, key_size = 12, multi_probe_level = 1)
@@ -18,15 +17,15 @@ class Tracking:
     @target.setter
     def target(self, target):
         self._target = target
-        self._targetkps, self._targetdes = self._orb.detectAndCompute(target, None)
+        self._targetkps, self._targetdes = self._algo.detectAndCompute(target, None)
 
     def find_homography(self, image):
-        kps, des = self._orb.detectAndCompute(image, None)
+        kps, des = self._algo.detectAndCompute(image, None)
         matches = self._matcher.knnMatch(self._targetdes, des, 2)
 
         good = []
         for m, n in matches:
-            if m.distance < 0.7 * n.distance:
+            if m.distance < 0.8 * n.distance:
                 good.append(m)
 
         if len(good) < 4:
