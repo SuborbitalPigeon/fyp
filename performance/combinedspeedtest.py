@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+from collections import OrderedDict
 import csv
 from os.path import join
 from time import process_time
@@ -21,8 +22,8 @@ class CombinedSpeedTest(PerformanceTest):
         self._algos.append(xfeatures2d.SIFT_create())
         self._algos.append(xfeatures2d.SURF_create())
 
-        self._times = {}
-        self._nkps = {}
+        self._times = OrderedDict()
+        self._nkps = OrderedDict()
 
         self._images = [cv2.imread(image) for image in self.files]
 
@@ -44,7 +45,7 @@ class CombinedSpeedTest(PerformanceTest):
             self._nkps[label] = np.array(nkps)
 
     def save_data(self):
-        # FPS CSV
+        # Time CSV
         with open(join('results', 'combinedspeed.csv'), 'w') as f:
             writer = csv.writer(f)
             writer.writerow(list(self._times.keys()))
