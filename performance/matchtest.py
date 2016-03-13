@@ -66,11 +66,13 @@ class MatchTest(PerformanceTest):
         H = self.h
 
         img1 = np.zeros(shape, np.uint8)
-        cv2.circle(img1, (int(kp1.pt[0]), int(kp1.pt[1])), int(kp1.size / 2), 255, -1)
+        cv2.circle(img1, (int(kp1.pt[0]), int(kp1.pt[1])), int(kp1.size / 2), 255, -1, cv2.LINE_AA)
         img1 = cv2.warpPerspective(img1, H, self.baseimg.shape[1::-1])
+        ret, img1 = cv2.threshold(img1, 128, 255, cv2.THRESH_BINARY)
 
         img2 = np.zeros(shape, np.uint8)
-        cv2.circle(img2, (int(kp2.pt[0]), int(kp2.pt[1])), int(kp2.size / 2), 255, -1)
+        cv2.circle(img2, (int(kp2.pt[0]), int(kp2.pt[1])), int(kp2.size / 2), 255, -1, cv2.LINE_AA)
+        ret, img2 = cv2.threshold(img2, 128, 255, cv2.THRESH_BINARY)
 
         union = cv2.add(img1, img2)
         intersection = img1 & img2
