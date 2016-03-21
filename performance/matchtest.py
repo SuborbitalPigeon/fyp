@@ -34,7 +34,7 @@ class MatchTest(PerformanceTest):
 
     def run_tests(self):
         count = 0
-        det = cv2.ORB_create()
+        det = cv2.ORB_create(nfeatures=5000)
 
         for descriptor in self.descriptors:
             count += 1
@@ -75,8 +75,8 @@ class MatchTest(PerformanceTest):
         cv2.circle(img2, (int(kp2.pt[0]), int(kp2.pt[1])), int(kp2.size / 2), 255, -1, cv2.LINE_AA)
         ret, img2 = cv2.threshold(img2, 128, 255, cv2.THRESH_BINARY)
 
-        union = cv2.add(img1, img2)
-        intersection = img1 & img2
+        union = cv2.bitwise_or(img1, img2)
+        intersection = cv2.bitwise_and(img1, img2)
         return np.sum(intersection) / np.sum(union)
 
     def run_test(self, label, detector, descriptor):
