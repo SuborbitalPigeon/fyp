@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import csv
 from os.path import isfile, join
 import re
 import sys
@@ -139,7 +140,15 @@ class MatchTest(PerformanceTest):
         plt.savefig(join("results", "precisionrecall.pdf"))
 
     def save_data(self):
-        pass
+        with open(join('results', 'precision.csv'), 'w') as f:
+            writer = csv.writer(f)
+            writer.writerow(list(self.precision.keys()))
+            writer.writerows(zip(*self.precision.values()))
+
+        with open(join('results', 'recall.csv'), 'w') as f:
+            writer = csv.writer(f)
+            writer.writerow(list(self.recall.keys()))
+            writer.writerows(zip(*self.recall.values()))
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
