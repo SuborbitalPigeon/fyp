@@ -24,7 +24,7 @@ class PerformanceTest(metaclass=ABCMeta):
         self.detectors = ['Agast', 'AKAZE', 'BRISK', 'Fast', 'GFTT', 'KAZE', 'MSER', 'ORB']
         self.detectors += ['SIFT', 'SURF', 'Star'] # xfeatures2d module
         self.descriptors = ['AKAZE', 'BRISK', 'KAZE', 'ORB']
-        self.descriptors += ['BRIEF', 'DAISY', 'FREAK', 'LATCH', 'SIFT', 'SURF'] # Removed: LUCID
+        self.descriptors += ['BRIEF', 'DAISY', 'FREAK', 'LATCH', 'LUCID', 'SIFT', 'SURF']
 
     @staticmethod
     def transform_point(kp, h):
@@ -159,6 +159,8 @@ class PerformanceTest(metaclass=ABCMeta):
             desc = xfeatures2d.FREAK_create()
         elif descriptor is 'LATCH':
             desc = xfeatures2d.LATCH_create()
+        elif descriptor is 'LUCID':
+            desc = cv2.LUCID_create(1, 1)
         elif descriptor is 'SIFT':
             desc = xfeatures2d.SIFT_create()
         elif descriptor is 'SURF':
