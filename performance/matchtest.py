@@ -121,7 +121,7 @@ class MatchTest(PerformanceTest):
             if tp == 0 and fp == 0:
                 tp = 1
 
-            precision.append(fp / (tp + fp))
+            precision.append(1 - (tp / (tp + fp)))
             recall.append(tp / len(corresponding))
 
         self.recall[label] = recall
@@ -129,7 +129,7 @@ class MatchTest(PerformanceTest):
 
     def show_plots(self):
         for key in self.precision.keys():
-            plt.plot(self.precision[key], self.recall[key], label=key)
+            plt.scatter(self.precision[key], self.recall[key], label=key, cmap=plt.get_cmap("jet"))
 
         plt.xlabel("1-precision")
         plt.xlim(xmin=0, xmax=1)
