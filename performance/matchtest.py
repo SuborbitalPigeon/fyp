@@ -102,27 +102,27 @@ class MatchTest(PerformanceTest):
 
         for m in matches:
             basekp = basekps[m.trainIdx]
-            basekp = self.transform_point(basekp, self.h)
-            if self.point_in_image(basekp, self.mask):
-                corresponding.append(m)
+            tbasekp = self.transform_point(basekp, self.h)
+            if self.point_in_image(tbasekp, self.mask):
+                if self._get_overlap(basekp, kps[m.queryIdx]) > 0.2:
+                    corresponding.append(m)
 
         for t in np.linspace(lower, upper, 20):
-            correct = 0
-            wrong = 0
+            tp = 0
+            fp = 0
 
-            if len(corresponding) is 0:
-                continue
-            for m in corresponding:
-                basekp = basekps[m.trainIdx]
-                tkp = kps[m.queryIdx]
+            for m in matches:
                 if m.distance < t:
-                    if self._get_overlap(basekp, tkp) > 0.5:
-                        correct += 1
+                    if m in corresponding:
+                        tp += 1
                     else:
-                        wrong += 1
+                        fp += 1
 
-            recall.append(correct / len(corresponding))
-            precision.append(wrong / len(matches))
+            if tp == 0 and fp == 0:
+                tp = 1
+
+            precision.append(fp / (tp + fp))
+            recall.append(tp / len(corresponding))
 
         self.recall[label] = recall
         self.precision[label] = precision
