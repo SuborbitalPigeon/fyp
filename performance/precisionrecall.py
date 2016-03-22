@@ -13,7 +13,7 @@ import numpy as np
 from performancetest import PerformanceTest
 
 
-class MatchTest(PerformanceTest):
+class PrecisionRecall(PerformanceTest):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
@@ -161,7 +161,7 @@ class MatchTest(PerformanceTest):
 
 if __name__ == '__main__':
     dirs = PerformanceTest.get_dirs_from_argv()
-    test = MatchTest(dirs=dirs, filexts=('pgm', 'ppm'))
+    test = PrecisionRecall(dirs=dirs, filexts=('pgm', 'ppm'))
 
     test.run_tests()
     test.show_plots()
