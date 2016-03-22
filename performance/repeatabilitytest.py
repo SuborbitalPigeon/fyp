@@ -108,7 +108,7 @@ class RepeatabilityTest(PerformanceTest):
 
 if __name__ == '__main__':
     dirs = PerformanceTest.get_dirs_from_argv()
-    test = RepeatabilityTest(dirs=dirs, fileexts=('pgm', 'ppm'))
+    test = RepeatabilityTest(dirs=dirs, filexts=('pgm', 'ppm'))
     test.run_tests()
     test.show_plots()
     test.save_data()
