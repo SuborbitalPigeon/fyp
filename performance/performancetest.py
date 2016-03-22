@@ -65,7 +65,7 @@ class PerformanceTest(metaclass=ABCMeta):
         pt = np.asarray(kp.pt).reshape(2, 1)
 
         try:
-            ret = mask[pt[0][0]][pt[1][0]]!= 0 # If mask rectangle is visible
+            ret = mask[pt[0][0]][pt[1][0]] != 0 # If mask rectangle is visible
         except IndexError:
             return False # Outside the mask rectangle image boundaries
 
@@ -84,7 +84,9 @@ class PerformanceTest(metaclass=ABCMeta):
         """
         mask = np.empty(shape, np.uint8)
         mask.fill(255)
-        return cv2.warpPerspective(mask, h, shape[1::-1])
+        mask = cv2.warpPerspective(mask, h, shape[1::-1])
+        ret, mask = cv2.threshold(mask, 128, 255, cv2.THRESH_BINARY)
+        return mask
 
     def create_detector(self, detector):
         """ Create detector object.
