@@ -7,6 +7,8 @@ from os.path import join
 import re
 
 import cv2
+from matplotlib import pyplot as plt
+from matplotlib.ticker import FuncFormatter
 import numpy as np
 from scipy.spatial import distance
 
@@ -77,8 +79,26 @@ class RepeatabilityTest(PerformanceTest):
         self.common[label] = common
         self.baset[label] = baset
 
+    @staticmethod
+    def _percent_format(y, position):
+        s = str(y * 100)
+        return s + '%'
+
     def show_plots(self):
-        pass
+        ytick = FuncFormatter(self._percent_format)
+        fnames = [f.split('/')[1] for f in self.files[1:]] # filenames
+
+        for (ckey, cval), (tkey, tval) in zip(self.common.items(), self.baset.items()):
+            plt.plot(np.divide(tval, cval), label=ckey)
+
+        plt.title("2-Repeatability")
+        plt.xticks(np.arange(len(fnames)), fnames)
+        plt.xlabel("Image")
+        plt.gca().yaxis.set_major_formatter(ytick)
+        plt.ylim(0, 1) # 0 % -- 100 %
+        plt.legend(loc='best', framealpha=0.5)
+        plt.draw()
+        plt.savefig(join("results", "repeatability.pdf"))
 
     def save_data(self):
         with open(join('results', 'repeat-common.csv'), 'w') as f:
