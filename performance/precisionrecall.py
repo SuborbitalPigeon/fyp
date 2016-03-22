@@ -138,7 +138,7 @@ class PrecisionRecall(PerformanceTest):
 
     def show_plots(self):
         for key in self.precision.keys():
-            plt.scatter(self.precision[key], self.recall[key], label=key, cmap=plt.get_cmap("jet"))
+            plt.plot(self.precision[key], self.recall[key], label=key)
 
         plt.xlabel("1-precision")
         plt.xlim(xmin=0, xmax=1)
