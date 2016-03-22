@@ -17,6 +17,7 @@ class CombinedSpeedTest(PerformanceTest):
         super().__init__(**kwargs)
 
         self._algos = [cv2.AKAZE_create()]
+        self._algos.append(cv2.BRISK_create())
         self._algos.append(cv2.KAZE_create())
         self._algos.append(cv2.ORB_create())
         self._algos.append(xfeatures2d.SIFT_create())
