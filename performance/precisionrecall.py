@@ -67,12 +67,12 @@ class PrecisionRecall(PerformanceTest):
         H = self.h
 
         img1 = np.zeros(shape, np.uint8)
-        cv2.circle(img1, (int(kp1.pt[0]), int(kp1.pt[1])), int(kp1.size / 2), 255, -1, cv2.LINE_AA)
+        cv2.circle(img1, (round(kp1.pt[0]), round(kp1.pt[1])), round(kp1.size / 2), 255, -1, cv2.LINE_AA)
         img1 = cv2.warpPerspective(img1, H, self.baseimg.shape[1::-1])
         ret, img1 = cv2.threshold(img1, 128, 255, cv2.THRESH_BINARY)
 
         img2 = np.zeros(shape, np.uint8)
-        cv2.circle(img2, (int(kp2.pt[0]), int(kp2.pt[1])), int(kp2.size / 2), 255, -1, cv2.LINE_AA)
+        cv2.circle(img2, (round(kp2.pt[0]), round(kp2.pt[1])), round(kp2.size / 2), 255, -1, cv2.LINE_AA)
         ret, img2 = cv2.threshold(img2, 128, 255, cv2.THRESH_BINARY)
 
         union = cv2.bitwise_or(img1, img2)
@@ -102,7 +102,7 @@ class PrecisionRecall(PerformanceTest):
 
         for m in matches:
             basekp = basekps[m.trainIdx]
-            tbasekp = self.transform_point(basekp, self.h)
+            tbasekp = self.transform_point(basekp.pt, self.h)
             if self.point_in_image(tbasekp, self.mask):
                 if self._get_overlap(basekp, kps[m.queryIdx]) > 0.2:
                     corresponding.append(m)

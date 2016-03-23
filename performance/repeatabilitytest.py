@@ -57,14 +57,14 @@ class RepeatabilityTest(PerformanceTest):
 
             # This image's keypoints
             for point in keypoints:
-                if self.point_in_image(point, mask):
+                if self.point_in_image(point.pt, mask):
                     pts.append(point.pt)
 
             # The base image's keypoints, projection required
             for point in basepts:
-                tp = self.transform_point(point, mat)
+                tp = self.transform_point(point.pt, mat)
                 if self.point_in_image(tp, mask):
-                    tpts.append(tp.pt)
+                    tpts.append(tp)
 
             tpts = np.vstack(tpts)
             pts = np.vstack(pts)

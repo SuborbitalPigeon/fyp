@@ -33,23 +33,20 @@ class PerformanceTest(metaclass=ABCMeta):
 
         Parameters
         ----------
-        kp: cv2.KeyPoint
+        kp: tuple
             The keypoint to relocate
         h: array_like
             The homography matrix
 
-
         Returns
         -------
-        output: cv2.KeyPoint
-            A new keypoint in the new location. Doesn't change the scale of this
-            new keypoint.
+        output: array-like
+            The new keypoint's location.
         """
-        p = np.asarray(kp.pt).reshape(2, 1)
-        p = np.vstack((p, 1))  # Converts to homogenous coords
-        d = np.dot(h, p)       # h * p
-        d = (d / d[2])[0:2] # Converts from homogenous coords
-        return cv2.KeyPoint(d[0], d[1], kp.size)
+        p = np.array(kp + (1,)).reshape(3, 1) # Converts to homogenous coords
+        d = np.dot(h, p)                      # h * p
+        d = (d / d[2])[0:2]                   # Converts from homogenous coords
+        return (d[0, 0], d[1, 0])             # Converts back to a tuple
 
     @staticmethod
     def point_in_image(kp, mask):
@@ -57,15 +54,15 @@ class PerformanceTest(metaclass=ABCMeta):
 
         Parameters
         ---------
-        kp: cv2.KeyPoint
-            A keypoint to check for being in the image.
+        kp: tuple
+            A point to check for being in the image.
         mask: array_like
             A mask created with create_mask().
         """
-        pt = np.asarray(kp.pt).reshape(2, 1)
-
+        x = round(kp[0])
+        y = round(kp[1])
         try:
-            ret = mask[pt[0][0]][pt[1][0]] != 0 # If mask rectangle is visible
+            ret = mask.item(y, x) != 0 # If mask rectangle is visible
         except IndexError:
             return False # Outside the mask rectangle image boundaries
 
