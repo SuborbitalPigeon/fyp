@@ -47,6 +47,8 @@ class RepeatabilityTest(PerformanceTest):
 
             if num is '1':
                 basepts = keypoints
+                common.append(len(basepts))
+                baset.append(len(basepts))
                 continue
 
             pts = [] # current image's keypoints
@@ -85,7 +87,7 @@ class RepeatabilityTest(PerformanceTest):
         fnames = [f.split('/')[1] for f in self.files[1:]] # filenames
 
         for (ckey, cval), (tkey, tval) in zip(self.common.items(), self.baset.items()):
-            plt.plot(np.divide(tval, cval), label=ckey)
+            plt.plot(np.divide(tval[1:], cval[1:]), label=ckey)
 
         plt.title("2-Repeatability")
         plt.xticks(np.arange(len(fnames)), fnames)
