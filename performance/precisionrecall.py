@@ -15,22 +15,9 @@ from performancetest import PerformanceTest
 class PrecisionRecall(PerformanceTest):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        testname = kwargs['testimg']
-
-        m = re.match('(\w+)/img(\d).(\w+)', testname)
-        (dir, num, ext) = m.groups()
-        basename = join(dir, 'img' + '1.' + ext)
-
-        self.baseimg = cv2.imread(basename)
-        self.baseimg = cv2.cvtColor(self.baseimg, cv2.COLOR_BGR2GRAY)
-        self.timg = cv2.imread(testname)
-        self.timg = cv2.cvtColor(self.timg, cv2.COLOR_BGR2GRAY)
-        self.h = np.loadtxt(join(dir, 'H1to' + num + 'p'))
 
         self.recall = {}
         self.precision = {}
-
-        self.mask = self.create_mask(self.baseimg.shape, self.h)
 
     def run_tests(self):
         count = 0
@@ -48,27 +35,28 @@ class PrecisionRecall(PerformanceTest):
 
             self.run_test(label, det, desc)
 
-    def _get_overlap(self, kp1, kp2):
+    def _get_overlap(self, kp1, kp2, h):
         """ Get overlap between two keypoints
 
         Parameters
         ----------
         kp1: cv2.KeyPoint
-            the first keypoint.
+            the first keypoint (transformed by homography)
         kp2: cv2.KeyPoint
             the second keypoint.
+        h: array_like
+            the homography matrix
 
         Returns
         ------
         overlap: float
             The overlap percentage
         """
-        shape = self.baseimg.shape
-        H = self.h
+        shape = self._baseimg.shape
 
         img1 = np.zeros(shape, np.uint8)
         cv2.circle(img1, (round(kp1.pt[0]), round(kp1.pt[1])), round(kp1.size / 2), 255, -1, cv2.LINE_AA)
-        img1 = cv2.warpPerspective(img1, H, self.baseimg.shape[1::-1])
+        img1 = cv2.warpPerspective(img1, h, self._baseimg.shape[1::-1])
         ret, img1 = cv2.threshold(img1, 128, 255, cv2.THRESH_BINARY)
 
         img2 = np.zeros(shape, np.uint8)
@@ -80,34 +68,52 @@ class PrecisionRecall(PerformanceTest):
         return np.sum(intersection) / np.sum(union)
 
     def run_test(self, label, detector, descriptor):
-        basekps = self.get_keypoints(self.baseimg, detector)
-        basekps, basedes = self.get_descriptors(self.baseimg, basekps, descriptor)
-
-        kps = self.get_keypoints(self.timg, detector)
-        kps, des = self.get_descriptors(self.timg, kps, descriptor)
+        pattern = re.compile('(\w+)/img(\d).(\w+)')
+        matches = []
+        corresponding = []
 
         if label == 'SIFT' or 'SURF':
             bf = cv2.BFMatcher(cv2.NORM_L2, crossCheck=True)
         else:
             bf = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True)
 
-        matches = bf.match(des, basedes)
-        dists = [m.distance for m in matches]
-        lower = np.min(dists)
-        upper = np.max(dists)
+        for file in self.files:
+            match = pattern.match(file)
+            (dir, num, ext) = match.groups()
+            print("Processing file {}".format(num))
 
+            img = cv2.imread(file, cv2.IMREAD_GRAYSCALE)
+            kps = self.get_keypoints(img, detector)
+            kps, des = self.get_descriptors(img, kps, descriptor)
+
+            # First image in the sequence, store kps and descriptors for matching
+            if num == '1':
+                self._baseimg = img
+                basekps = kps
+                basedes = des
+                continue
+
+            # Require homography and mask for image comparison
+            h = np.loadtxt(join(dir, 'H1to{}p'.format(num)))
+            mask = self.create_mask(img.shape, h)
+
+            thismatches = bf.match(des, basedes)
+            matches.extend(thismatches)
+
+            # Find close match pairs and designate corresponding
+            for m in thismatches:
+                basekp = basekps[m.trainIdx]
+                kp = kps[m.queryIdx]
+                tbasekp = self.transform_point(basekp.pt, h)
+                if self.point_in_image(tbasekp, mask):
+                    if self._get_overlap(basekp, kp, h) > 0.2:
+                        corresponding.append(m)
+
+        dists = [m.distance for m in matches]
         recall = []
         precision = []
-        corresponding = []
 
-        for m in matches:
-            basekp = basekps[m.trainIdx]
-            tbasekp = self.transform_point(basekp.pt, self.h)
-            if self.point_in_image(tbasekp, self.mask):
-                if self._get_overlap(basekp, kps[m.queryIdx]) > 0.2:
-                    corresponding.append(m)
-
-        for t in np.linspace(lower, upper, 20):
+        for t in np.linspace(np.min(dists), np.max(dists), 20):
             tp = 0
             fp = 0
 
@@ -151,11 +157,8 @@ class PrecisionRecall(PerformanceTest):
             writer.writerows(zip(*self.recall.values()))
 
 if __name__ == '__main__':
-    if len(sys.argv) < 2:
-        raise ValueError("No file")
-    if isfile(sys.argv[1]):
-        img = sys.argv[1]
-    test = PrecisionRecall(testimg=img)
+    dirs = PerformanceTest.get_dirs_from_argv()
+    test = PrecisionRecall(dirs=dirs, filexts=('pgm', 'ppm'))
 
     test.run_tests()
     test.show_plots()
