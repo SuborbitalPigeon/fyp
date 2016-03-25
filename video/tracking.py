@@ -3,7 +3,8 @@ import numpy as np
 
 class Tracking:
     def __init__(self):
-        self._algo = cv2.AKAZE_create()
+        self._det = cv2.AgastFeatureDetector_create(threshold=30)
+        self._desc = cv2.ORB_create()
 
         FLANN_INDEX_LSH = 6
         index_params = dict(algorithm = FLANN_INDEX_LSH, table_number = 6, key_size = 12, multi_probe_level = 1)
@@ -17,10 +18,12 @@ class Tracking:
     @target.setter
     def target(self, target):
         self._target = target
-        self._targetkps, self._targetdes = self._algo.detectAndCompute(target, None)
+        self._targetkps = self._det.detect(target, None)
+        self._targetkps, self._targetdes = self._desc.compute(target, self._targetkps)
 
     def find_homography(self, image):
-        kps, des = self._algo.detectAndCompute(image, None)
+        kps = self._det.detect(image, None)
+        kps, des = self._desc.compute(image, kps)
         matches = self._matcher.knnMatch(self._targetdes, des, 2)
 
         good = []
