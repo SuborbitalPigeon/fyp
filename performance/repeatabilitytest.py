@@ -2,7 +2,6 @@
 
 import csv
 from collections import OrderedDict
-import os
 from os.path import join
 import re
 
@@ -42,6 +41,7 @@ class RepeatabilityTest(PerformanceTest):
             match = pattern.match(file)
             (dir, num, ext) = match.groups()
 
+            print("Processing file {}".format(num))
             image = cv2.imread(file, 0)
             keypoints = self.get_keypoints(image, detector)
 
@@ -52,26 +52,22 @@ class RepeatabilityTest(PerformanceTest):
             pts = [] # current image's keypoints
             tpts = [] # transformed base keypoints
 
-            mat = np.loadtxt(os.path.join(dir, 'H1to{}p'.format(num)))
+            mat = np.loadtxt(join(dir, 'H1to{}p'.format(num)))
             mask = self.create_mask(image.shape, mat)
 
-            # This image's keypoints
-            for point in keypoints:
-                if self.point_in_image(point.pt, mask):
-                    pts.append(point.pt)
+            pts = np.vstack([point.pt for point in keypoints if self.point_in_image(point.pt, mask)])
 
             # The base image's keypoints, projection required
             for point in basepts:
                 tp = self.transform_point(point.pt, mat)
                 if self.point_in_image(tp, mask):
                     tpts.append(tp)
-
             tpts = np.vstack(tpts)
-            pts = np.vstack(pts)
+
             if len(pts) > len(tpts):
-                dist = distance.cdist(pts, tpts).min(axis=1)
-            else:
                 dist = distance.cdist(pts, tpts).min(axis=0)
+            else:
+                dist = distance.cdist(pts, tpts).min(axis=1)
 
             common.append(len(tpts))
             baset.append(np.sum(dist < THRESHOLD))
