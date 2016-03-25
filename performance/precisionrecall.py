@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
 
 import csv
-from os.path import isfile, join
+from os.path import join
 import re
-import sys
 
 import cv2
 from matplotlib import pyplot as plt
@@ -21,7 +20,7 @@ class PrecisionRecall(PerformanceTest):
 
     def run_tests(self):
         count = 0
-        det = cv2.ORB_create(nfeatures=5000)
+        det = cv2.AKAZE_create()
 
         for descriptor in self.descriptors:
             count += 1
