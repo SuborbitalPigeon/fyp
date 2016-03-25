@@ -3,7 +3,7 @@
 from collections import OrderedDict
 import csv
 from os.path import join
-from time import process_time
+from time import perf_counter
 
 import cv2
 from cv2 import xfeatures2d
@@ -36,9 +36,9 @@ class CombinedSpeedTest(PerformanceTest):
             nkps = []
 
             for image in self._images:
-                start = process_time()
+                start = perf_counter()
                 kps, des = algo.detectAndCompute(image, None)
-                end = process_time()
+                end = perf_counter()
                 times.append((end-start)*1000)
                 nkps.append(len(kps))
 

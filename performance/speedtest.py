@@ -4,7 +4,7 @@ import csv
 from collections import OrderedDict
 import itertools
 from os.path import join
-from time import process_time
+from time import perf_counter
 
 import cv2
 from matplotlib import pyplot as plt
@@ -41,10 +41,10 @@ class SpeedTest(PerformanceTest):
         nkps = []
 
         for image in self.images:
-            start = process_time()
+            start = perf_counter()
             keypoints = self.get_keypoints(image, detector)
             (keypoints, descriptors) = self.get_descriptors(image, keypoints, descriptor)
-            end = process_time()
+            end = perf_counter()
 
             times.append((end - start) * 1000) # Milliseconds
             nkps.append(len(keypoints))
