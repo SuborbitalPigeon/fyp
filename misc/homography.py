@@ -27,7 +27,7 @@ def transform_point(p, h):
     return (d / d[2])[0:2] # Divide rows 1 and 2 by 3, return only these rows
 
 if __name__ == '__main__':
-    mat = np.loadtxt('bark/H1to2p')
+    mat = np.loadtxt('../performance/bark/H1to2p')
 
     coor = np.array([[200], [400]])
     tcoor = transform_point(coor, mat)
@@ -37,11 +37,11 @@ if __name__ == '__main__':
     cv2.namedWindow("img2")
     cv2.namedWindow("baseimg2")
 
-    img = cv2.imread('bark/img1.ppm')
+    img = cv2.imread('../performance/bark/img1.ppm')
     cv2.circle(img, (coor[0], coor[1]), 20, (0, 0, 255), 5)
     cv2.imshow("baseimg", img)
 
-    img2 = cv2.imread('bark/img2.ppm')
+    img2 = cv2.imread('../performance/bark/img2.ppm')
     cv2.imshow("img2", img2)
 
     size = img.shape[1::-1]
