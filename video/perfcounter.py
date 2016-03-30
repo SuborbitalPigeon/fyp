@@ -1,4 +1,5 @@
 import csv
+from os.path import join
 
 import numpy as np
 
@@ -19,7 +20,7 @@ class PerfCounter:
     def save_data(self):
         rows = zip(self.detect, self.compute, self.match, self.nkps)
 
-        with open('perf.csv', 'w', newline='') as csvfile:
+        with open(join('results', 'perf.csv'), 'w', newline='') as csvfile:
             writer = csv.writer(csvfile)
             writer.writerow(['detect', 'compute', 'match', 'nkps'])
             writer.writerows(rows)
