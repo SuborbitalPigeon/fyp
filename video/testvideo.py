@@ -48,6 +48,7 @@ class UserInterface(object):
             else:
                 frame = self._controller.frame
                 if frame == None:
+                    self._tracking.perf.save_data()
                     break
 
                 H = self._tracking.find_homography(frame)

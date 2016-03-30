@@ -1,7 +1,7 @@
 FILE_PATTERN = "images/image%05d.png"
 
 import cv2
-from matplotlib import pyplot as plt
+
 
 class VideoController(object):
     def __init__(self):

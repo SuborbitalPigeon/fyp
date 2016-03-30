@@ -10,7 +10,7 @@ class Tracking:
         self._det = cv2.AgastFeatureDetector_create(threshold=30)
         self._desc = cv2.ORB_create()
 
-        self._perf = PerfCounter()
+        self.perf = PerfCounter()
 
         FLANN_INDEX_LSH = 6
         index_params = dict(algorithm = FLANN_INDEX_LSH, table_number = 6, key_size = 12, multi_probe_level = 1)
@@ -34,8 +34,9 @@ class Tracking:
         kps, des = self._desc.compute(image, kps)
         end = perf_counter()
 
-        self._perf.append_detect((mid - start) * 1000)
-        self._perf.append_describe((end - mid) * 1000)
+        self.perf.detect.append((mid - start) * 1000)
+        self.perf.compute.append((end - mid) * 1000)
+        self.perf.nkps.append(len(kps))
 
         start = perf_counter()
         matches = self._matcher.knnMatch(self._targetdes, des, 2)
@@ -45,8 +46,8 @@ class Tracking:
             if m.distance < 0.8 * n.distance:
                 good.append(m)
         end = perf_counter()
-        self._perf.append_match((end - start) * 1000)
-        self._perf.report_last(20)
+        self.perf.match.append((end - start) * 1000)
+        self.perf.report_last(20)
 
         if len(good) < 4:
             return # Not enough good matches
