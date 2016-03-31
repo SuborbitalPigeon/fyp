@@ -27,6 +27,24 @@ class PerformanceTest(metaclass=ABCMeta):
         self.descriptors += ['BRIEF', 'DAISY', 'FREAK', 'LATCH', 'SIFT', 'SURF'] # Removed: LUCID
 
     @staticmethod
+    def get_overlap_error(kp1, kp2, h, shape):
+        img1 = np.zeros(shape, np.uint8)
+        cv2.circle(img1, (round(kp1.pt[0]), round(kp1.pt[1])), round(kp1.size / 2), 255, -1, cv2.LINE_AA)
+        ret, img1 = cv2.threshold(img1, 128, 255, cv2.THRESH_BINARY)
+
+        img2 = np.zeros(shape, np.uint8)
+        cv2.circle(img2, (round(kp2.pt[0]), round(kp2.pt[1])), round(kp2.size / 2), 255, -1, cv2.LINE_AA)
+        img2 = cv2.warpPerspective(img2, h, shape[1::-1])
+        ret, img2 = cv2.threshold(img2, 128, 255, cv2.THRESH_BINARY)
+
+        union = np.sum(cv2.bitwise_or(img1, img2))
+        intersection = np.sum(cv2.bitwise_and(img1, img2))
+        if union == 0:
+            return 1
+        else:
+            return 1 - (intersection / union)
+
+    @staticmethod
     def transform_point(kp, h):
         """
         Transform a point by a homography.
