@@ -61,6 +61,10 @@ class PerformanceTest(metaclass=ABCMeta):
         """
         x = round(kp[0])
         y = round(kp[1])
+
+        if x < 0 or y < 0:
+            return False
+
         try:
             ret = mask.item(y, x) != 0 # If mask rectangle is visible
         except IndexError:

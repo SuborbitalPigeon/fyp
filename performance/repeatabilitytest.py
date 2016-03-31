@@ -21,7 +21,7 @@ class RepeatabilityTest(PerformanceTest):
         super().__init__(**kwargs)
 
         self.common = OrderedDict()
-        self.baset = OrderedDict()
+        self.transformed = OrderedDict()
 
     def run_tests(self):
         count = 0
@@ -34,7 +34,7 @@ class RepeatabilityTest(PerformanceTest):
 
     def run_test(self, label, detector):
         common = []
-        baset = []
+        transformed = []
         pattern = re.compile('(\w+)/img(\d).(\w+)')
 
         for file in self.files:
@@ -46,36 +46,38 @@ class RepeatabilityTest(PerformanceTest):
             keypoints = self.get_keypoints(image, detector)
 
             if num is '1':
+                baseimg = image
                 basepts = keypoints
                 common.append(len(basepts))
-                baset.append(len(basepts))
+                transformed.append(len(basepts))
                 continue
 
-            pts = [] # current image's keypoints
-            tpts = [] # transformed base keypoints
+            hi = np.linalg.inv(np.loadtxt(join(dir, 'H1to{}p'.format(num))))
+            mask = self.create_mask(baseimg.shape, hi)
 
-            mat = np.loadtxt(join(dir, 'H1to{}p'.format(num)))
-            mask = self.create_mask(image.shape, mat)
+            # Only those that are common
+            bpts = []
+            for pt in basepts:
+                if self.point_in_image(pt.pt, mask):
+                    bpts.append(pt.pt)
 
-            pts = np.vstack([point.pt for point in keypoints if self.point_in_image(point.pt, mask)])
-
-            # The base image's keypoints, projection required
-            for point in basepts:
-                tp = self.transform_point(point.pt, mat)
+            tpts = []
+            for point in keypoints:
+                tp = self.transform_point(point.pt, hi)
                 if self.point_in_image(tp, mask):
                     tpts.append(tp)
             tpts = np.vstack(tpts)
 
-            if len(pts) > len(tpts):
-                dist = distance.cdist(pts, tpts).min(axis=0)
+            if len(tpts) > len(bpts):
+                dist = distance.cdist(tpts, bpts).min(axis=0)
             else:
-                dist = distance.cdist(pts, tpts).min(axis=1)
+                dist = distance.cdist(tpts, bpts).min(axis=1)
 
-            common.append(len(tpts))
-            baset.append(np.sum(dist < THRESHOLD))
+            common.append(len(bpts))
+            transformed.append(np.sum(dist < THRESHOLD))
 
         self.common[label] = common
-        self.baset[label] = baset
+        self.transformed[label] = transformed
 
     @staticmethod
     def _percent_format(y, position):
@@ -86,7 +88,7 @@ class RepeatabilityTest(PerformanceTest):
         ytick = FuncFormatter(self._percent_format)
         fnames = [f.split('/')[1] for f in self.files[1:]] # filenames
 
-        for (ckey, cval), (tkey, tval) in zip(self.common.items(), self.baset.items()):
+        for (ckey, cval), (tkey, tval) in zip(self.common.items(), self.transformed.items()):
             plt.plot(np.divide(tval[1:], cval[1:]), label=ckey)
 
         plt.title("2-Repeatability")
@@ -104,10 +106,10 @@ class RepeatabilityTest(PerformanceTest):
             writer.writerow(list(self.common.keys()))
             writer.writerows(zip(*self.common.values()))
 
-        with open(join('results', 'repeat-baset.csv'), 'w') as f:
+        with open(join('results', 'repeat-transformed.csv'), 'w') as f:
             writer = csv.writer(f)
-            writer.writerow(list(self.baset.keys()))
-            writer.writerows(zip(*self.baset.values()))
+            writer.writerow(list(self.transformed.keys()))
+            writer.writerows(zip(*self.transformed.values()))
 
 if __name__ == '__main__':
     dirs = PerformanceTest.get_dirs_from_argv()
