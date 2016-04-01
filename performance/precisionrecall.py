@@ -39,11 +39,6 @@ class PrecisionRecall(PerformanceTest):
         matches = []
         corresponding = []
 
-        if label == 'SIFT' or 'SURF':
-            bf = cv2.BFMatcher(cv2.NORM_L2, crossCheck=True)
-        else:
-            bf = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True)
-
         for file in self.files:
             match = pattern.match(file)
             (dir, num, ext) = match.groups()
@@ -52,6 +47,11 @@ class PrecisionRecall(PerformanceTest):
             img = cv2.imread(file, cv2.IMREAD_GRAYSCALE)
             kps = self.get_keypoints(img, detector)
             kps, des = self.get_descriptors(img, kps, descriptor)
+
+            if des.dtype == np.float32:
+                bf = cv2.BFMatcher(cv2.NORM_L2)
+            else:
+                bf = cv2.BFMatcher(cv2.NORM_HAMMING)
 
             # First image in the sequence, store kps and descriptors for matching
             if num == '1':
