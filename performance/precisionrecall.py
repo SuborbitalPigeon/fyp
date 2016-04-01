@@ -34,38 +34,6 @@ class PrecisionRecall(PerformanceTest):
 
             self.run_test(label, det, desc)
 
-    def _get_overlap(self, kp1, kp2, h):
-        """ Get overlap between two keypoints
-
-        Parameters
-        ----------
-        kp1: cv2.KeyPoint
-            the first keypoint (transformed by homography)
-        kp2: cv2.KeyPoint
-            the second keypoint.
-        h: array_like
-            the homography matrix
-
-        Returns
-        ------
-        overlap: float
-            The overlap percentage
-        """
-        shape = self._baseimg.shape
-
-        img1 = np.zeros(shape, np.uint8)
-        cv2.circle(img1, (round(kp1.pt[0]), round(kp1.pt[1])), round(kp1.size / 2), 255, -1, cv2.LINE_AA)
-        img1 = cv2.warpPerspective(img1, h, self._baseimg.shape[1::-1])
-        ret, img1 = cv2.threshold(img1, 128, 255, cv2.THRESH_BINARY)
-
-        img2 = np.zeros(shape, np.uint8)
-        cv2.circle(img2, (round(kp2.pt[0]), round(kp2.pt[1])), round(kp2.size / 2), 255, -1, cv2.LINE_AA)
-        ret, img2 = cv2.threshold(img2, 128, 255, cv2.THRESH_BINARY)
-
-        union = cv2.bitwise_or(img1, img2)
-        intersection = cv2.bitwise_and(img1, img2)
-        return np.sum(intersection) / np.sum(union)
-
     def run_test(self, label, detector, descriptor):
         pattern = re.compile('(\w+)/img(\d).(\w+)')
         matches = []
@@ -93,8 +61,8 @@ class PrecisionRecall(PerformanceTest):
                 continue
 
             # Require homography and mask for image comparison
-            h = np.loadtxt(join(dir, 'H1to{}p'.format(num)))
-            mask = self.create_mask(img.shape, h)
+            hi = np.linalg.inv(np.loadtxt(join(dir, 'H1to{}p'.format(num))))
+            mask = self.create_mask(img.shape, hi)
 
             thismatches = bf.match(des, basedes)
             matches.extend(thismatches)
@@ -103,9 +71,9 @@ class PrecisionRecall(PerformanceTest):
             for m in thismatches:
                 basekp = basekps[m.trainIdx]
                 kp = kps[m.queryIdx]
-                tbasekp = self.transform_point(basekp.pt, h)
-                if self.point_in_image(tbasekp, mask):
-                    if self._get_overlap(basekp, kp, h) > 0.2:
+                tkp = self.transform_point(kp.pt, hi)
+                if self.point_in_image(tkp, mask):
+                    if self.get_overlap_error(basekp, kp, hi, self._baseimg.shape) < 0.4:
                         corresponding.append(m)
 
         dists = [m.distance for m in matches]
