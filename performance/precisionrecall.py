@@ -1,8 +1,6 @@
-#!/usr/bin/env python3
-
+from collections import OrderedDict
 import csv
 from os.path import join
-import re
 
 import cv2
 from matplotlib import pyplot as plt
@@ -10,107 +8,74 @@ import numpy as np
 
 from performancetest import PerformanceTest
 
+IMG1FILE = "graf/img1.ppm"
+IMG2FILE = "graf/img3.ppm"
+HFILE = "graf/H1to3p"
+
 
 class PrecisionRecall(PerformanceTest):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+    def __init__(self):
+        self.det = cv2.xfeatures2d.SURF_create()
 
-        self.recall = {}
-        self.precision = {}
+        self.precision = OrderedDict()
+        self.recall = OrderedDict()
 
     def run_tests(self):
-        count = 0
-        det = cv2.AKAZE_create()
+        img1 = cv2.imread(IMG1FILE, cv2.IMREAD_GRAYSCALE)
+        img2 = cv2.imread(IMG2FILE, cv2.IMREAD_GRAYSCALE)
 
-        for descriptor in self.descriptors:
-            count += 1
-            label = "{}".format(descriptor)
-            print("Running test {}/{}  - {}".format(count, len(self.descriptors), descriptor))
+        h = np.loadtxt(HFILE)
+        hi = np.linalg.inv(h)
 
-            desc = self.create_descriptor(descriptor, 'ORB')
-            if desc == None:
-                print("Invalid combination - ORB/{}".format(descriptor))
-                continue
+        des = cv2.ORB_create()
 
-            self.run_test(label, det, desc)
+        kp1 = self.det.detect(img1, None)
+        kp1, des1 = des.compute(img1, kp1)
+        kp2 = self.det.detect(img2, None)
+        kp2, des2 = des.compute(img2, kp2)
 
-    def run_test(self, label, detector, descriptor):
-        pattern = re.compile('(\w+)/img(\d).(\w+)')
-        matches = []
+        bf = cv2.BFMatcher(cv2.NORM_L2)
+        matches = bf.match(des1, des2)
+
         corresponding = []
+        for m in matches:
+            query = kp1[m.queryIdx]
+            train = kp2[m.trainIdx]
+            if self.get_overlap_error(query, train, hi, img1.shape) < 0.4:
+                corresponding.append(m)
 
-        for file in self.files:
-            match = pattern.match(file)
-            (dir, num, ext) = match.groups()
-            print("Processing file {}".format(num))
+        # This is ludicrously low
+        print("Corresponding:", len(corresponding))
 
-            img = cv2.imread(file, cv2.IMREAD_GRAYSCALE)
-            kps = self.get_keypoints(img, detector)
-            kps, des = self.get_descriptors(img, kps, descriptor)
-
-            if des.dtype == np.float32:
-                bf = cv2.BFMatcher(cv2.NORM_L2)
-            else:
-                bf = cv2.BFMatcher(cv2.NORM_HAMMING)
-
-            # First image in the sequence, store kps and descriptors for matching
-            if num == '1':
-                self._baseimg = img
-                basekps = kps
-                basedes = des
-                continue
-
-            # Require homography and mask for image comparison
-            hi = np.linalg.inv(np.loadtxt(join(dir, 'H1to{}p'.format(num))))
-            mask = self.create_mask(img.shape, hi)
-
-            thismatches = bf.match(des, basedes)
-            matches.extend(thismatches)
-
-            # Find close match pairs and designate corresponding
-            for m in thismatches:
-                basekp = basekps[m.trainIdx]
-                kp = kps[m.queryIdx]
-                tkp = self.transform_point(kp.pt, hi)
-                if self.point_in_image(tkp, mask):
-                    if self.get_overlap_error(basekp, kp, hi, self._baseimg.shape) < 0.4:
-                        corresponding.append(m)
-
-        dists = [m.distance for m in matches]
-        recall = []
         precision = []
+        recall = []
+        dists = [m.distance for m in matches]
+        for t in np.linspace(np.min(dists), np.max(dists)):
+            tp = fp = 0
 
-        for t in np.linspace(np.min(dists), np.max(dists), 20):
-            tp = 0
-            fp = 0
+            for m in [mat for mat in matches if mat.distance < t]:
+                if m in corresponding:
+                    tp += 1
+                else:
+                    fp += 1
 
-            for m in matches:
-                if m.distance < t:
-                    if m in corresponding:
-                        tp += 1
-                    else:
-                        fp += 1
-
-            if tp == 0 and fp == 0:
-                tp = 1
+            if (tp + fp) == 0:
+                continue
 
             precision.append(1 - (tp / (tp + fp)))
             recall.append(tp / len(corresponding))
 
-        self.recall[label] = recall
-        self.precision[label] = precision
+        self.precision['ORB'] = precision
+        self.recall['ORB'] = recall
 
     def show_plots(self):
         for key in self.precision.keys():
-            plt.plot(self.precision[key], self.recall[key], label=key)
+            plt.plot(self.precision[key], self.recall[key], 'r+')
 
         plt.xlabel("1-precision")
-        plt.xlim(xmin=0, xmax=1)
+        plt.xlim((0, 1))
+        plt.ylim((0, 1))
         plt.ylabel("recall")
-        plt.ylim(ymin=0, ymax=1)
-        plt.legend(loc='best')
-        plt.draw()
-        plt.savefig(join("results", "precisionrecall.pdf"))
 
     def save_data(self):
         with open(join('results', 'precision.csv'), 'w') as f:
@@ -124,9 +89,7 @@ class PrecisionRecall(PerformanceTest):
             writer.writerows(zip(*self.recall.values()))
 
 if __name__ == '__main__':
-    dirs = PerformanceTest.get_dirs_from_argv()
-    test = PrecisionRecall(dirs=dirs, filexts=('pgm', 'ppm'))
-
+    test = PrecisionRecall()
     test.run_tests()
     test.show_plots()
     test.save_data()
