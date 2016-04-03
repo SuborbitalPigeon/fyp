@@ -52,7 +52,8 @@ class RepeatabilityTest(PerformanceTest):
                 repeat.append(len(basepts))
                 continue
 
-            hi = np.linalg.inv(np.loadtxt(join(dir, 'H1to{}p'.format(num))))
+            h = np.loadtxt(join(dir, 'H1to{}p'.format(num)))
+            hi = np.linalg.inv(h)
             mask = self.create_mask(baseimg.shape, hi)
 
             # Only those that are common
@@ -60,17 +61,15 @@ class RepeatabilityTest(PerformanceTest):
             for pt in basepts:
                 if self.point_in_image(pt.pt, mask):
                     bpts.append(pt)
-            bptst = np.vstack([pt.pt for pt in bpts]) # base points as array
+            bptst = np.vstack([pt.pt for pt in bpts])  # base points as array
 
             rep = 0
             for point in keypoints:
                 tp = self.transform_point(point.pt, hi)
                 if self.point_in_image(tp, mask):
-                    dists = distance.cdist([tp], bptst)     # Distances from this point to all base points
-                    if np.min(dists) < THRESHOLD:           # If there's one which is close
-                        nearestbpt = bpts[np.argmin(dists)] # Get this closest point
-                        if self.get_overlap_error(nearestbpt, point, hi, baseimg.shape) < 0.4:
-                            rep += 1
+                    dists = distance.cdist([tp], bptst)  # Distances from this point to all base points
+                    if np.min(dists) < THRESHOLD:        # Smallest distance below threshold?
+                        rep += 1
 
             common.append(len(bpts))
             repeat.append(rep)
@@ -85,7 +84,7 @@ class RepeatabilityTest(PerformanceTest):
 
     def show_plots(self):
         ytick = FuncFormatter(self._percent_format)
-        fnames = [f.split('/')[1] for f in self.files[1:]] # filenames
+        fnames = [f.split('/')[1] for f in self.files[1:]]  # filenames
 
         for (ckey, cval), (tkey, tval) in zip(self.common.items(), self.repeating.items()):
             plt.plot(np.divide(tval[1:], cval[1:]), label=ckey)
@@ -94,7 +93,7 @@ class RepeatabilityTest(PerformanceTest):
         plt.xticks(np.arange(len(fnames)), fnames)
         plt.xlabel("Image")
         plt.gca().yaxis.set_major_formatter(ytick)
-        plt.ylim(0, 1) # 0 % -- 100 %
+        plt.ylim(0, 1)  # 0 % -- 100 %
         plt.legend(loc='best', framealpha=0.5)
         plt.draw()
         plt.savefig(join("results", "repeatability.pdf"))
