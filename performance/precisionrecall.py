@@ -56,12 +56,13 @@ class PrecisionRecall(PerformanceTest):
         for m in matches:
             query = kp1[m.queryIdx]
             train = kp2[m.trainIdx]
+            transformed = self.transform_point(train.pt, self.hi)
 
             # Remove points outside the common image area
             if self.point_in_image(query.pt, mask) is False:
                 matches.remove(m)
                 continue
-            if self.point_in_image(train.pt, mask) is False:
+            if self.point_in_image(transformed, mask) is False:
                 matches.remove(m)
                 continue
 
