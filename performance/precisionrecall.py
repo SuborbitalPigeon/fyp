@@ -92,7 +92,7 @@ class PrecisionRecall(PerformanceTest):
             if (tp + fp) == 0:
                 continue
 
-            precision.append(1 - (tp / (tp + fp)))
+            precision.append(fp / len(matches))
             recall.append(tp / len(corresponding))
 
         self.precision[desc] = precision
