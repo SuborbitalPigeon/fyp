@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 from collections import OrderedDict
 import csv
 from os.path import isfile, join
@@ -53,7 +55,10 @@ class PrecisionRecall(PerformanceTest):
         matches = bf.match(des1, des2)
 
         corresponding = []
-        for m in matches:
+        for i, m in enumerate(matches):
+            if i % 100 == 0:
+                print("Processing match {:4} of {:4}, corresponding={:4}".format(i, len(matches), len(corresponding)))
+
             query = kp1[m.queryIdx]
             train = kp2[m.trainIdx]
             transformed = self.transform_point(train.pt, self.hi)
