@@ -6,6 +6,7 @@ import numpy as np
 from tracking import Tracking
 from videocontroller import VideoController
 
+
 class UserInterface(object):
     def __init__(self):
         super().__init__()
@@ -35,8 +36,8 @@ class UserInterface(object):
 
             elif event == cv2.EVENT_LBUTTONUP:
                 self._selecting = False
-                tl = np.min((self._initial_point, (x, y)), axis=0) # top left
-                br = np.max((self._initial_point, (x, y)), axis=0) # bottom right
+                tl = np.min((self._initial_point, (x, y)), axis=0)  # top left
+                br = np.max((self._initial_point, (x, y)), axis=0)  # bottom right
                 roi = np.copy(self._controller.frame[tl[1]:br[1], tl[0]:br[0]])
                 self._tracking.target = roi
 
@@ -47,17 +48,13 @@ class UserInterface(object):
                 cv2.imshow('output', self._shown_frame)
             else:
                 frame = self._controller.frame
-                if frame == None:
+                if frame is None:
                     self._tracking.perf.save_data()
                     break
 
-                H = self._tracking.find_homography(frame)
-                if H is not None:
-                    h, w = self._tracking.target.shape
-                    pts = np.float32([ [0,0],[0,h-1],[w-1,h-1],[w-1,0] ]).reshape(-1,1,2)
-                    dst = cv2.perspectiveTransform(pts, H)
-
-                    img = cv2.polylines(frame,[np.int32(dst)],True,255,3, cv2.LINE_AA)
+                dst = self._tracking.find_corners(frame, self._tracking.target)
+                if dst is not None:
+                    img = cv2.polylines(frame, [np.int32(dst)], True, 255, 3, cv2.LINE_AA)
                     cv2.imshow('output', img)
                 else:
                     cv2.imshow('output', frame)

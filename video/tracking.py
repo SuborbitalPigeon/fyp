@@ -50,10 +50,25 @@ class Tracking:
         self.perf.report_last(20)
 
         if len(good) < 4:
-            return # Not enough good matches
+            return  # Not enough good matches
 
         apts = np.float32([self._targetkps[m.queryIdx].pt for m in good])
         bpts = np.float32([kps[m.trainIdx].pt for m in good])
 
         H, mask = cv2.findHomography(apts, bpts, cv2.RANSAC, 3.0)
         return H
+
+    def find_corners(self, image, target):
+        H = self.find_homography(image)
+
+        if H is not None:
+            h, w = target.shape
+            pts = np.float32([[0, 0], [0, h-1], [w-1, h-1], [w-1, 0]]).reshape(-1, 1, 2)
+            pts = cv2.perspectiveTransform(pts, H)
+
+            centre = np.mean(pts, axis=0).round()
+            self.perf.centres.append(centre)
+
+            return pts
+        else:
+            self.perf.centres.append(np.array([[np.nan, np.nan]]))
