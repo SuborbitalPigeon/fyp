@@ -11,6 +11,7 @@ class DetectorDescriptor:
         self._create_detector(det_s)
         
         if des_s is not None:
+            self.desc = None
             self._create_descriptor(des_s, det_s)
 
     def _create_detector(self, detector):
@@ -96,3 +97,19 @@ class DetectorDescriptor:
 
     def detect_and_compute(self, image):
         return self.det.detectAndCompute(image, None)
+
+    def detect(self, image):
+        try:
+            keypoints = self.det.detect(image)
+        except:
+            return ([])
+        else:
+            return keypoints
+
+    def compute(self, image, keypoints):
+        try:
+            (keypoints, descriptors) = self.desc.compute(image, keypoints)
+        except:
+            return ([], [])
+        else:
+            return (keypoints, descriptors)

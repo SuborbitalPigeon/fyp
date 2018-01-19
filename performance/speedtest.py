@@ -1,96 +1,80 @@
 #!/usr/bin/env python3
 
-import csv
-from collections import OrderedDict
 import itertools
 from os.path import join
 from time import perf_counter
 
 import cv2
 from matplotlib import pyplot as plt
-import numpy as np
+import pandas as pd
+import seaborn as sns
 
-from performancetest import PerformanceTest
+from detectordescriptor import DetectorDescriptor
+from utils import get_files_from_argv
 
-
-class SpeedTest(PerformanceTest):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.times = OrderedDict()
-        self.nkps = OrderedDict()
-
-        self.images = [cv2.imread(image, 0) for image in self.files]
+class SpeedTest:
+    def __init__(self, files):
+        self.images = [cv2.imread(image, 0) for image in files]
 
     def run_tests(self):
         count = 0
-        for detector, descriptor in itertools.product(self.detectors, self.descriptors):
-            count += 1
-            label = "{}/{}".format(detector, descriptor)
-            print("Running test {}/{}  - {}/{}".format(count, len(self.detectors) * len(self.descriptors), detector, descriptor))
-
-            det = self.create_detector(detector)
-            desc = self.create_descriptor(descriptor, detector)
-            if desc == None:
-                print("Invalid combination - {}/{}".format(detector, descriptor))
-                continue
-
-            self.run_test(label, det, desc)
-
-    def run_test(self, label, detector, descriptor):
+        detectors_s = []
+        descriptors_s = []
         times = []
         nkps = []
 
-        for image in self.images:
-            start = perf_counter()
-            keypoints = self.get_keypoints(image, detector)
-            (keypoints, descriptors) = self.get_descriptors(image, keypoints, descriptor)
-            end = perf_counter()
+        det_s, des_s = DetectorDescriptor.det_s, DetectorDescriptor.des_s
 
-            times.append((end - start) * 1000) # Milliseconds
-            nkps.append(len(keypoints))
+        for detector, descriptor in itertools.product(det_s, des_s):
+            count += 1
+            label = "{}/{}".format(detector, descriptor)
+            print("Running test {}/{}  - {}/{}".format(count, len(det_s) * len(des_s), detector, descriptor))
 
-        self.times[label] = np.array(times)
-        self.nkps[label] = np.array(nkps)
+            algo = DetectorDescriptor(detector, descriptor)
+            if algo.desc is None:
+                print("Invalid combination - {}/{}".format(detector, descriptor))
+                continue
+
+            for image in self.images:
+                start = perf_counter()
+                keypoints = algo.detect(image)
+                keypoints, _ = algo.compute(image, keypoints)
+                end = perf_counter()
+
+                detectors_s.append(detector)
+                descriptors_s.append(descriptor)
+                times.append((end - start) * 1000) # Milliseconds
+                nkps.append(len(keypoints))
+
+        self.data = pd.DataFrame({'detector': detectors_s, 'descriptor': descriptors_s,
+                                  'time': times, 'nkp': nkps})
 
     def show_plots(self):
         # One graph per detector
-        for detector in self.detectors:
-            graphdict = OrderedDict()
-            for key, val in self.times.items():
-                if key.startswith(detector):
-                    graphdict[key] = val
+        for detector in DetectorDescriptor.det_s:
+            data = self.data[self.data.detector == detector]
 
-            labels = [l.split('/')[1] for l in graphdict.keys()] # only descriptor bit
-            data = list(graphdict.values())
-            plt.figure()
-            plt.boxplot(data, labels=labels, showmeans=True)
-            plt.title("Detector = {}".format(detector))
-            plt.xticks(rotation=45)
-            plt.xlabel("Descriptor")
-            plt.ylabel("Time taken / ms")
-            plt.draw()
-            plt.savefig(join("results", "speed", detector.lower() + ".pdf"))
+            fig, ax = plt.subplots()
 
-        #plt.show()
+            sns.swarmplot(data=data, x='descriptor', y='time', ax=ax)
+
+            ax.set_title("Detector = {}".format(detector))
+            ax.set_xlabel("Descriptor")
+            ax.set_ylabel("Time taken / ms")
+            ax.set_yscale('log')
+
+            fig.savefig(join("results", "speed", detector.lower() + ".pdf"))
 
     def save_data(self):
-        # FPS CSV
-        with open(join('results', 'speed.csv'), 'w') as f:
-            writer = csv.writer(f)
-            writer.writerow(list(self.times.keys()))
-            writer.writerows(zip(*self.times.values()))
+        self.data.to_csv(join('results', 'speed.csv'))
 
-        # Number of keypoints CSV
-        with open(join('results', 'nkps.csv'), 'w') as f:
-            writer = csv.writer(f)
-            writer.writerow(list(self.nkps.keys()))
-            writer.writerows(zip(*self.nkps.values()))
 
 if __name__ == '__main__':
     cv2.ocl.setUseOpenCL(False)
-    
-    dirs = PerformanceTest.get_dirs_from_argv()
-    test = SpeedTest(dirs=dirs, filexts=('pgm', 'ppm'))
+    sns.set()
+
+    files = get_files_from_argv()
+    test = SpeedTest(files)
 
     test.run_tests()
     test.show_plots()
