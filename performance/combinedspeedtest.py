@@ -1,21 +1,18 @@
 #!/usr/bin/env python3
 
-from collections import OrderedDict
-import csv
 from os.path import join
 from time import perf_counter
 
 import cv2
 from cv2 import xfeatures2d
 from matplotlib import pyplot as plt
-import numpy as np
+import pandas as pd
+import seaborn as sns
 
-from performancetest import PerformanceTest
+from utils import get_files_from_argv
 
-class CombinedSpeedTest(PerformanceTest):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-
+class CombinedSpeedTest:
+    def __init__(self, files):
         self._algos = [cv2.AKAZE_create()]
         self._algos.append(cv2.BRISK_create())
         self._algos.append(cv2.KAZE_create())
@@ -23,58 +20,54 @@ class CombinedSpeedTest(PerformanceTest):
         self._algos.append(xfeatures2d.SIFT_create())
         self._algos.append(xfeatures2d.SURF_create())
 
-        self._times = OrderedDict()
-        self._nkps = OrderedDict()
-
-        self._images = [cv2.imread(image) for image in self.files]
+        self._images = [cv2.imread(image) for image in files]
 
     def run_tests(self):
+        algos = []
+        times = []
+        nkps = []
+
         for algo in self._algos:
             label = str(algo).split()[0][1:] # Take only the algo name, and remove <
+            label = label.split('_') # Remove xfeatures2d bit
+            if len(label) == 2:
+                label = label[1]
+            else:
+                label = label[0] 
             print("Running test {}".format(label))
-            times = []
-            nkps = []
 
             for image in self._images:
                 start = perf_counter()
                 kps, des = algo.detectAndCompute(image, None)
                 end = perf_counter()
+
+                algos.append(label)
                 times.append((end-start)*1000)
                 nkps.append(len(kps))
 
-            self._times[label] = np.array(times)
-            self._nkps[label] = np.array(nkps)
+        self.data = pd.DataFrame({'algo': algos, 'time': times, 'nkp': nkps})
 
     def save_data(self):
-        # Time CSV
-        with open(join('results', 'combinedspeed.csv'), 'w') as f:
-            writer = csv.writer(f)
-            writer.writerow(list(self._times.keys()))
-            writer.writerows(zip(*self._times.values()))
-
-        # Number of keypoints CSV
-        with open(join('results', 'combinednkps.csv'), 'w') as f:
-            writer = csv.writer(f)
-            writer.writerow(list(self._nkps.keys()))
-            writer.writerows(zip(*self._nkps.values()))
+        self.data.to_csv(join('results', 'combined.csv'))
 
     def show_plots(self):
-        plt.figure()
-        labels = list(self._times.keys())
-        data = list(self._times.values())
-        plt.boxplot(data, labels=labels, showmeans=True)
-        plt.title("Combined speed test")
-        plt.xticks(rotation=45)
-        plt.xlabel("Algorithm")
-        plt.ylabel("Time taken / ms")
-        plt.draw()
-        plt.savefig(join("results", "combinedspeed.pdf"))
+        fig, ax = plt.subplots()
+
+        sns.swarmplot(data=self.data, x='algo', y='time', ax=ax)
+
+        ax.set_title("Combined speed test")
+        ax.set_xlabel("Algorithm")
+        ax.set_ylabel("Time taken / ms")
+        ax.set_yscale('log')
+
+        fig.savefig(join("results", "combinedspeed.pdf"))
 
 if __name__ == '__main__':
     cv2.ocl.setUseOpenCL(False)
-    
-    dirs = PerformanceTest.get_dirs_from_argv()
-    test = CombinedSpeedTest(dirs=dirs, filexts=('pgm', 'ppm'))
+    sns.set_style("whitegrid")
+
+    files = get_files_from_argv()
+    test = CombinedSpeedTest(files)
 
     test.run_tests()
     test.save_data()
