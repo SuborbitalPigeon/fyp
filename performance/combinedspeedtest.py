@@ -9,17 +9,14 @@ from matplotlib import pyplot as plt
 import pandas as pd
 import seaborn as sns
 
+from detectordescriptor import DetectorDescriptor
 from utils import get_files_from_argv
 
 class CombinedSpeedTest:
     def __init__(self, files):
-        self._algos = [cv2.AKAZE_create()]
-        self._algos.append(cv2.BRISK_create())
-        self._algos.append(cv2.KAZE_create())
-        self._algos.append(cv2.ORB_create())
-        self._algos.append(xfeatures2d.SIFT_create())
-        self._algos.append(xfeatures2d.SURF_create())
+        algos_s = ['AKAZE', 'BRISK', 'KAZE', 'ORB', 'SIFT', 'SURF']
 
+        self._algos = [DetectorDescriptor(s) for s in algos_s]
         self._images = [cv2.imread(image) for image in files]
 
     def run_tests(self):
@@ -28,20 +25,14 @@ class CombinedSpeedTest:
         nkps = []
 
         for algo in self._algos:
-            label = str(algo).split()[0][1:] # Take only the algo name, and remove <
-            label = label.split('_') # Remove xfeatures2d bit
-            if len(label) == 2:
-                label = label[1]
-            else:
-                label = label[0] 
-            print("Running test {}".format(label))
+            print("Running test {}".format(algo.detector_s))
 
             for image in self._images:
                 start = perf_counter()
-                kps, des = algo.detectAndCompute(image, None)
+                kps, _ = algo.detect_and_compute(image)
                 end = perf_counter()
 
-                algos.append(label)
+                algos.append(algo.detector_s)
                 times.append((end-start)*1000)
                 nkps.append(len(kps))
 
