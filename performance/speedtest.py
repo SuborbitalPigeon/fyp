@@ -87,6 +87,8 @@ class SpeedTest(PerformanceTest):
             writer.writerows(zip(*self.nkps.values()))
 
 if __name__ == '__main__':
+    cv2.ocl.setUseOpenCL(False)
+    
     dirs = PerformanceTest.get_dirs_from_argv()
     test = SpeedTest(dirs=dirs, filexts=('pgm', 'ppm'))
 

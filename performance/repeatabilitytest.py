@@ -110,6 +110,8 @@ class RepeatabilityTest(PerformanceTest):
             writer.writerows(zip(*self.repeating.values()))
 
 if __name__ == '__main__':
+    cv2.ocl.setUseOpenCL(False)
+    
     dirs = PerformanceTest.get_dirs_from_argv()
     test = RepeatabilityTest(dirs=dirs, filexts=('pgm', 'ppm'))
     test.run_tests()

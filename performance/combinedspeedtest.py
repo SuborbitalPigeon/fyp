@@ -71,6 +71,8 @@ class CombinedSpeedTest(PerformanceTest):
         plt.savefig(join("results", "combinedspeed.pdf"))
 
 if __name__ == '__main__':
+    cv2.ocl.setUseOpenCL(False)
+    
     dirs = PerformanceTest.get_dirs_from_argv()
     test = CombinedSpeedTest(dirs=dirs, filexts=('pgm', 'ppm'))
 

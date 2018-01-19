@@ -3,6 +3,8 @@
 import cv2
 from cv2 import xfeatures2d
 
+cv2.ocl.setUseOpenCL(False)
+
 file = '../performance/boat/img1.pgm'
 img = cv2.imread(file)
 

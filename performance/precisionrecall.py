@@ -137,6 +137,8 @@ if __name__ == '__main__':
     if isfile(sys.argv[1]):
         f = sys.argv[1]
 
+    cv2.ocl.setUseOpenCL(False)
+
     test = PrecisionRecall(testimg=f)
     test.run_tests()
     test.show_plots()
