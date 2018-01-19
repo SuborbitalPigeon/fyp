@@ -2,5 +2,6 @@
 __pycache__
 misc/transformed
 performance/results
+venv/
 video/images
 video/results
