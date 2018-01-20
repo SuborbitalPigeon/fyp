@@ -50,12 +50,13 @@ class CombinedSpeedTest:
         ax.set_xlabel("Algorithm")
         ax.set_ylabel("Time taken / ms")
         ax.set_yscale('log')
+        ax.grid(axis='y')
 
         fig.savefig(join("results", "combinedspeed.pdf"))
 
 if __name__ == '__main__':
     cv2.ocl.setUseOpenCL(False)
-    sns.set_style("whitegrid")
+    sns.reset_defaults()
 
     files = get_files_from_argv()
     test = CombinedSpeedTest(files)

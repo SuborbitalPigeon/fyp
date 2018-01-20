@@ -28,7 +28,9 @@ class SpeedTest:
         for detector, descriptor in itertools.product(det_s, des_s):
             count += 1
             label = "{}/{}".format(detector, descriptor)
-            print("Running test {}/{}  - {}/{}".format(count, len(det_s) * len(des_s), detector, descriptor))
+            print("Running test {}/{} - {}/{}".format(count,
+                                                      len(det_s) * len(des_s),
+                                                      detector, descriptor))
 
             algo = DetectorDescriptor(detector, descriptor)
             if algo.desc is None:
@@ -62,6 +64,7 @@ class SpeedTest:
             ax.set_xlabel("Descriptor")
             ax.set_ylabel("Time taken / ms")
             ax.set_yscale('log')
+            ax.grid()
 
             fig.savefig(join("results", "speed", detector.lower() + ".pdf"))
 
@@ -71,7 +74,7 @@ class SpeedTest:
 
 if __name__ == '__main__':
     cv2.ocl.setUseOpenCL(False)
-    sns.set()
+    sns.reset_defaults()
 
     files = get_files_from_argv()
     test = SpeedTest(files)
