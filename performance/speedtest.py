@@ -1,11 +1,10 @@
-#!/usr/bin/env python3
-
 import itertools
 from os.path import join
 from time import perf_counter
 
 import cv2
 from matplotlib import pyplot as plt
+import numpy as np
 import pandas as pd
 import seaborn as sns
 
@@ -64,21 +63,22 @@ class SpeedTest:
             ax.set_xlabel("Descriptor")
             ax.set_ylabel("Time taken / ms")
             ax.set_yscale('log')
-            ax.grid()
+            ax.grid(axis='y')
 
             fig.savefig(join("results", "speed", detector.lower() + ".pdf"))
+            
+        # Heatmap
+        fig, ax = plt.subplots()
+        
+        df = self.data.pivot_table(['nkp', 'time'], ['detector', 'descriptor'], aggfunc=np.sum)
+        df = ((df.time / df.nkp) * 1000).unstack()
+        df = df.replace(np.inf, np.nan)
+
+        sns.heatmap(df, annot=True, fmt=".0f", cmap='viridis', ax=ax)
+        ax.set_title("Speed test")
+
+        fig.savefig(join("results", "speed.pdf"))
+        return fig
 
     def save_data(self):
         self.data.to_csv(join('results', 'speed.csv'))
-
-
-if __name__ == '__main__':
-    cv2.ocl.setUseOpenCL(False)
-    sns.reset_defaults()
-
-    files = get_files_from_argv()
-    test = SpeedTest(files)
-
-    test.run_tests()
-    test.show_plots()
-    test.save_data()

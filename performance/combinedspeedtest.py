@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 from os.path import join
 from time import perf_counter
 
@@ -53,14 +51,4 @@ class CombinedSpeedTest:
         ax.grid(axis='y')
 
         fig.savefig(join("results", "combinedspeed.pdf"))
-
-if __name__ == '__main__':
-    cv2.ocl.setUseOpenCL(False)
-    sns.reset_defaults()
-
-    files = get_files_from_argv()
-    test = CombinedSpeedTest(files)
-
-    test.run_tests()
-    test.save_data()
-    test.show_plots()
+        return fig
