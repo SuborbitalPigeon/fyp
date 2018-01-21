@@ -39,7 +39,7 @@ class SpeedTest:
             for image in self.images:
                 start = perf_counter()
                 keypoints = algo.detect(image)
-                keypoints, _ = algo.compute(image, keypoints)
+                keypoints = algo.compute(image, keypoints)[0]
                 end = perf_counter()
 
                 detectors_s.append(detector)

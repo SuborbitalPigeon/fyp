@@ -27,7 +27,7 @@ class CombinedSpeedTest:
 
             for image in self._images:
                 start = perf_counter()
-                kps, _ = algo.detect_and_compute(image)
+                kps = algo.detect_and_compute(image)[0]
                 end = perf_counter()
 
                 algos.append(algo.detector_s)
