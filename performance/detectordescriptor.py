@@ -4,81 +4,79 @@ import cv2
 from cv2 import xfeatures2d
 
 class DetectorDescriptor:
-    det_s = ['Agast', 'AKAZE', 'BRISK', 'Fast', 'GFTT', 'KAZE', 'MSER', 'ORB']
-    det_s += ['SIFT', 'SURF', 'Star']
-    des_s = ['AKAZE', 'BRISK', 'KAZE', 'ORB']
-    des_s += ['BRIEF', 'DAISY', 'FREAK', 'LATCH', 'SIFT', 'SURF']
+    detectors = {
+        'Agast': cv2.AgastFeatureDetector_create(),
+        'AKAZE': cv2.AKAZE_create(),
+        'BRISK': cv2.BRISK_create(),
+        'Fast': cv2.FastFeatureDetector_create(),
+        'GFTT': cv2.GFTTDetector_create(),
+        'KAZE': cv2.KAZE_create(),
+        'MSER': cv2.MSER_create(),
+        'ORB': cv2.ORB_create(),
+#        'Blob': cv2.SimpleBlobDetector()
+    }
+    xdetectors = {
+        'Harris': xfeatures2d.HarrisLaplaceFeatureDetector_create(),
+#        'PCT': xfeatures2d.PCTSignatures_create(),
+        'SIFT': xfeatures2d.SIFT_create(),
+        'SURF': xfeatures2d.SURF_create(),
+        'Star': xfeatures2d.StarDetector_create()    
+    }
+    
+    descriptors = {
+        'AKAZE': None,
+        'BRISK': cv2.BRISK_create(),
+        'KAZE': None,
+        'ORB': cv2.ORB_create(),
+    }
+    xdescriptors = {
+        'Boost': xfeatures2d.BoostDesc_create(),
+        'BRIEF': xfeatures2d.BriefDescriptorExtractor_create(),
+        'DAISY': xfeatures2d.DAISY_create(),
+        'FREAK': xfeatures2d.FREAK_create(),
+        'LATCH': xfeatures2d.LATCH_create(),
+        'LUCID': xfeatures2d.LUCID_create(),
+#        'VGG': xfeatures2d.VGG_create(),
+        'SIFT': xfeatures2d.SIFT_create(),
+        'SURF': xfeatures2d.SURF_create()
+    }
 
     def __init__(self, det_s, des_s=None):
         self._string_re = re.compile(r'<([^\W_]+)_?(\w+)?')
 
-        self._create_detector(det_s)
+        try:
+            self.det = self.detectors[det_s]
+        except KeyError:
+            try:
+                self.det = self.xdetectors[det_s]
+            except KeyError:
+                raise ValueError("Unsupported detector")
 
         if des_s:
-            self._create_descriptor(des_s, det_s)
+            try:
+                self.desc = self.descriptors[des_s]
+            except KeyError:
+                try:
+                    self.desc = self.xdescriptors[des_s]
+                except KeyError:
+                    raise ValueError("Unsupported descriptor")
+
+            # AKAZE and KAZE special case
+            if self.desc is None:
+                self.desc = self._create_kaze_descriptor(det_s)
         else:
             self.desc = None
 
-    def _create_detector(self, detector):
-        if detector is 'Agast':
-            self.det = cv2.AgastFeatureDetector_create()
-        elif detector is 'AKAZE':
-            self.det = cv2.AKAZE_create()
-        elif detector is 'BRISK':
-            self.det = cv2.BRISK_create()
-        elif detector is 'Fast':
-            self.det = cv2.FastFeatureDetector_create()
-        elif detector is 'GFTT':
-            self.det = cv2.GFTTDetector_create()
-        elif detector is 'KAZE':
-            self.det = cv2.KAZE_create()
-        elif detector is 'MSER':
-            self.det = cv2.MSER_create()
-        elif detector is 'ORB':
-            self.det = cv2.ORB_create()
+    def _create_kaze_descriptor(self, des_s):
+        """AKAZE only allows AKAZE or KAZE detectors."""
 
-        elif detector is 'MSD':
-            self.det = xfeatures2d.MSDDetector_create()
-        elif detector is 'SIFT':
-            self.det = xfeatures2d.SIFT_create()
-        elif detector is 'SURF':
-            self.det = xfeatures2d.SURF_create()
-        elif detector is 'Star':
-            self.det = xfeatures2d.StarDetector_create()
-        else:
-            raise ValueError("Unsupported detector")
-
-    def _create_descriptor(self, descriptor, detector):
-        if descriptor is 'AKAZE': # AKAZE only allows AKAZE or KAZE detectors
-            if detector is 'AKAZE' or detector is 'KAZE':
-                self.desc = cv2.AKAZE_create()
+        if isinstance(self.det, cv2.AKAZE) or isinstance(self.det, cv2.KAZE):
+            if des_s == 'AKAZE':
+                return cv2.AKAZE_create()
             else:
-                return None
-        elif descriptor is 'BRISK':
-            self.desc = cv2.BRISK_create()
-        elif descriptor is 'FREAK':
-            self.desc = xfeatures2d.FREAK_create()
-        elif descriptor is 'KAZE': # KAZE only allows KAZE or AKAZE detectors
-            if detector is 'AKAZE' or detector is 'KAZE':
-                self.desc = cv2.KAZE_create()
-            else:
-                return None
-        elif descriptor is 'ORB':
-            self.desc = cv2.ORB_create()
-        elif descriptor is 'BRIEF':
-            self.desc = xfeatures2d.BriefDescriptorExtractor_create()
-        elif descriptor is 'DAISY':
-            self.desc = xfeatures2d.DAISY_create()
-        elif descriptor is 'FREAK':
-            self.desc = xfeatures2d.FREAK_create()
-        elif descriptor is 'LATCH':
-            self.desc = xfeatures2d.LATCH_create()
-        elif descriptor is 'SIFT':
-            self.desc = xfeatures2d.SIFT_create()
-        elif descriptor is 'SURF':
-            self.desc = xfeatures2d.SURF_create()
+                return cv2.KAZE_create()
         else:
-            raise ValueError("Unsupported descriptor")
+            return None
 
     def _stringify(self, obj):
         match = self._string_re.match(str(obj))
