@@ -1,3 +1,5 @@
+import re
+
 import cv2
 from cv2 import xfeatures2d
 
@@ -8,11 +10,14 @@ class DetectorDescriptor:
     des_s += ['BRIEF', 'DAISY', 'FREAK', 'LATCH', 'SIFT', 'SURF']
 
     def __init__(self, det_s, des_s=None):
+        self._string_re = re.compile(r'<([^\W_]+)_?(\w+)?')
+
         self._create_detector(det_s)
-        
-        if des_s is not None:
-            self.desc = None
+
+        if des_s:
             self._create_descriptor(des_s, det_s)
+        else:
+            self.desc = None
 
     def _create_detector(self, detector):
         if detector is 'Agast':
@@ -42,7 +47,6 @@ class DetectorDescriptor:
             self.det = xfeatures2d.StarDetector_create()
         else:
             raise ValueError("Unsupported detector")
-
 
     def _create_descriptor(self, descriptor, detector):
         if descriptor is 'AKAZE': # AKAZE only allows AKAZE or KAZE detectors
@@ -76,16 +80,12 @@ class DetectorDescriptor:
         else:
             raise ValueError("Unsupported descriptor")
 
-    @staticmethod
-    def _stringify(obj):
-        label = str(obj).split()[0][1:]
-        label = label.split('_')
-        if len(label) == 2:
-            label = label[1]
+    def _stringify(self, obj):
+        match = self._string_re.match(str(obj))
+        if match.group(2):      # In the case if 'xfeatures2d_SIFT' etc.
+            return match.group(2)
         else:
-            label = label[0] 
-
-        return label
+            return match.group(1)
 
     @property
     def detector_s(self):
