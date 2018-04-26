@@ -5,3 +5,4 @@ performance/results
 venv/
 video/images
 video/results
+.ipynb_checkpoints/
