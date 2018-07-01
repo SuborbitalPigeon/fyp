@@ -20,6 +20,7 @@ class PerformanceTest(metaclass=ABCMeta):
             dirs = kwargs['dirs']
             fileexts = kwargs['filexts']
             self.files = [join(dir, file) for dir in dirs for file in listdir(dir) if file.endswith(fileexts)]
+            self.files = sorted(self.files)
 
         self.detectors = ['Agast', 'AKAZE', 'BRISK', 'Fast', 'GFTT', 'KAZE', 'MSER', 'ORB']
         self.detectors += ['SIFT', 'SURF', 'Star'] # xfeatures2d module
@@ -75,8 +76,8 @@ class PerformanceTest(metaclass=ABCMeta):
         mask: array_like
             A mask created with create_mask().
         """
-        x = round(kp[0])
-        y = round(kp[1])
+        kp = np.rint(kp).astype(int)
+        x, y = kp[0], kp[1]
 
         if x < 0 or y < 0:
             return False
