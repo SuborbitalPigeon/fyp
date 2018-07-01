@@ -63,7 +63,7 @@ class DetectorDescriptor:
 
             # AKAZE and KAZE special case
             if self.desc is None:
-                self.desc = self._create_kaze_descriptor(det_s)
+                self.desc = self._create_kaze_descriptor(des_s)
         else:
             self.desc = None
 
