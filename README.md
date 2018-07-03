@@ -8,4 +8,4 @@ Image files from http://www.robots.ox.ac.uk/~vgg/research/affine/
 Paper
 =====
 
-Paper is avaiable at https://ieeexplore.ieee.org/document/7838649/, DOI: 10.1109/ICARCV.2016.7838649.
+Paper is available at https://ieeexplore.ieee.org/document/7838649/, DOI: 10.1109/ICARCV.2016.7838649.
