@@ -1,5 +1,7 @@
 from os import listdir
 from os.path import isdir, join
+import re
+import subprocess
 import sys
 
 
@@ -25,3 +27,14 @@ def get_files_from_argv(image=True):
         raise ValueError("No directories given")
 
     return get_files_from_array(sys.argv[1:], image)
+
+
+def get_cpu_name():
+    try:
+        info = subprocess.check_output('lscpu', shell=True).strip().decode()
+    except CalledProcessError:
+        return "Cpu name could not be determined"
+    else:
+        for line in info.split('\n'):
+            if 'Model name' in line:
+                return re.sub(r'.*Model name.*: +', '', line, 1)
