@@ -6,6 +6,7 @@ import pandas as pd
 import seaborn as sns
 
 from .detectordescriptor import DetectorDescriptor
+from .utils import ensure_path
 
 
 def run_test(images, in_algos):
@@ -29,7 +30,7 @@ def run_test(images, in_algos):
 
 
 def generate_plots(data):
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=(8,6))
 
     sns.reset_orig()
     sns.swarmplot(data=data, x='algo', y='time', ax=ax)
@@ -41,5 +42,7 @@ def generate_plots(data):
     ax.grid(which='major', axis='y')
     ax.grid(which='minor', axis='y', linestyle=':', linewidth=0.5)
 
-    fig.savefig(join("results", "combinedspeed.pdf"))
+    path = join("results", "combinedspeed.pdf")
+    ensure_path(path)
+    fig.savefig(path)
     return fig
