@@ -35,7 +35,7 @@ class DetectorDescriptor:
         'DAISY': xfeatures2d.DAISY_create(),
         'FREAK': xfeatures2d.FREAK_create(),
         'LATCH': xfeatures2d.LATCH_create(),
-        'LUCID': xfeatures2d.LUCID_create(),
+#        'LUCID': xfeatures2d.LUCID_create(),
 #        'VGG': xfeatures2d.VGG_create(),
         'SIFT': xfeatures2d.SIFT_create(),
         'SURF': xfeatures2d.SURF_create()
