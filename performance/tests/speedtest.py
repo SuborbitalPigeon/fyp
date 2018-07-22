@@ -13,10 +13,8 @@ from .utils import ensure_path
 
 def run_test(images, full=False):
     """Run the speed test"""
-    detectors_s = []
-    descriptors_s = []
-    times = []
-    nkps = []
+    columns = ['detector', 'descriptor', 'time', 'nkp']
+    data = []
     count = 0
 
     if full:
@@ -38,10 +36,9 @@ def run_test(images, full=False):
             keypoints = algo.compute(image, keypoints)[0]
             end = perf_counter()
 
-            detectors_s.append(detector)
-            descriptors_s.append(descriptor)
-            times.append((end - start) * 1000) # Milliseconds
-            nkps.append(len(keypoints))
+            time = (end-start) * 1000  # s -> ms
+            nkps = len(keypoints)
+            data.append([detector, descriptor, time, nkps])
 
         if count % 10 == 0 and count != 0:
             print(" {} \n.".format(count), end='')
@@ -49,11 +46,9 @@ def run_test(images, full=False):
             print(".", end='')
         count += 1
 
-
     print("\nDone!")
             
-    return pd.DataFrame({'detector': detectors_s, 'descriptor': descriptors_s,
-                        'time': times, 'nkp': nkps})
+    return pd.DataFrame(data, columns=columns)
 
 
 def generate_plots(data):

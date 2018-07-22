@@ -10,9 +10,8 @@ from .utils import ensure_path
 
 
 def run_test(images, in_algos):
-    algos = []
-    times = []
-    nkps = []
+    columns = ['algo', 'time', 'nkp']
+    data = []
 
     for algo in in_algos:
         print("Running test {}".format(algo.detector_s))
@@ -22,11 +21,11 @@ def run_test(images, in_algos):
             kps = algo.detect_and_compute(image)[0]
             end = perf_counter()
 
-            algos.append(algo.detector_s)
-            times.append((end-start)*1000)
-            nkps.append(len(kps))
+            time = (end-start) * 1000  # s -> ms
+            nkp = len(kps)
+            data.append([algo.detector_s, time, nkp])
 
-    return pd.DataFrame({'algo': algos, 'time': times, 'nkp': nkps})
+    return pd.DataFrame(data, columns=columns)
 
 
 def generate_plots(data):
