@@ -27,6 +27,13 @@ def run_test(images, full=False):
     print("{} tests to run".format(len(det_s) * len(des_s)))
     for detector, descriptor in itertools.product(det_s, des_s):
         algo = DetectorDescriptor(detector, descriptor)
+
+        if count % 10 == 0 and count != 0:
+            print(" {} \n.".format(count), end='')
+        else:
+            print(".", end='')
+        count += 1
+        
         if algo.desc is None:
             continue
 
@@ -39,12 +46,6 @@ def run_test(images, full=False):
             time = (end-start) * 1000  # s -> ms
             nkps = len(keypoints)
             data.append([detector, descriptor, time, nkps])
-
-        if count % 10 == 0 and count != 0:
-            print(" {} \n.".format(count), end='')
-        else:
-            print(".", end='')
-        count += 1
 
     print("\nDone!")
             
