@@ -12,15 +12,13 @@ class DetectorDescriptor:
         'GFTT': cv2.GFTTDetector_create(),
         'KAZE': cv2.KAZE_create(),
         'MSER': cv2.MSER_create(),
-        'ORB': cv2.ORB_create(),
-#        'Blob': cv2.SimpleBlobDetector()
+        'ORB': cv2.ORB_create()
     }
     xdetectors = {
+#        'Boost': xfeatures2d.BoostDesc_create(),
         'Harris': xfeatures2d.HarrisLaplaceFeatureDetector_create(),
 #        'PCT': xfeatures2d.PCTSignatures_create(),
-        'SIFT': xfeatures2d.SIFT_create(),
-        'SURF': xfeatures2d.SURF_create(),
-        'Star': xfeatures2d.StarDetector_create()    
+        'Star': xfeatures2d.StarDetector_create()
     }
     
     descriptors = {
@@ -30,15 +28,13 @@ class DetectorDescriptor:
         'ORB': cv2.ORB_create(),
     }
     xdescriptors = {
-        'Boost': xfeatures2d.BoostDesc_create(),
+#        'Boost': xfeatures2d.BoostDesc_create(),
         'BRIEF': xfeatures2d.BriefDescriptorExtractor_create(),
         'DAISY': xfeatures2d.DAISY_create(),
         'FREAK': xfeatures2d.FREAK_create(),
         'LATCH': xfeatures2d.LATCH_create(),
 #        'LUCID': xfeatures2d.LUCID_create(),
-#        'VGG': xfeatures2d.VGG_create(),
-        'SIFT': xfeatures2d.SIFT_create(),
-        'SURF': xfeatures2d.SURF_create()
+        'VGG': xfeatures2d.VGG_create()
     }
 
     def __init__(self, det_s, des_s=None):
@@ -80,7 +76,7 @@ class DetectorDescriptor:
 
     def _stringify(self, obj):
         match = self._string_re.match(str(obj))
-        if match.group(2):      # In the case if 'xfeatures2d_SIFT' etc.
+        if match.group(2):      # In the case of 'xfeatures2d_SIFT' etc.
             return match.group(2)
         else:
             return match.group(1)

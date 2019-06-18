@@ -25,7 +25,9 @@ def run_test(images, in_algos):
             nkp = len(kps)
             data.append([algo.detector_s, time, nkp])
 
-    return pd.DataFrame(data, columns=columns)
+    df = pd.DataFrame(data, columns=columns)
+    df.to_csv(join('results', 'combinedspeed.csv'))
+    return df
 
 
 def generate_plots(data):

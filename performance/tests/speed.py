@@ -7,6 +7,12 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 
+# Progress updates in notebooks
+try:
+    from IPython.core.display import clear_output
+except ImportError:
+    pass
+
 from .detectordescriptor import DetectorDescriptor
 from .utils import ensure_path
 
@@ -24,14 +30,17 @@ def run_test(images, full=False):
         det_s = DetectorDescriptor.detectors.keys()
         des_s = DetectorDescriptor.descriptors.keys()
 
-    print("{} tests to run".format(len(det_s) * len(des_s)))
+    n_tests = len(det_s) * len(des_s)
     for detector, descriptor in itertools.product(det_s, des_s):
         algo = DetectorDescriptor(detector, descriptor)
 
-        if count % 10 == 0 and count != 0:
-            print(" {} \n.".format(count), end='')
-        else:
-            print(".", end='')
+        #Only for notebooks
+        try:
+            clear_output()
+        except NameError:
+            pass
+
+        print(f"Progress: {count} / {n_tests}")
         count += 1
         
         if algo.desc is None:
@@ -48,8 +57,10 @@ def run_test(images, full=False):
             data.append([detector, descriptor, time, nkps])
 
     print("\nDone!")
-            
-    return pd.DataFrame(data, columns=columns)
+
+    df = pd.DataFrame(data, columns=columns)
+    df.to_csv(join('results', 'speed.csv'))
+    return df
 
 
 def generate_plots(data):

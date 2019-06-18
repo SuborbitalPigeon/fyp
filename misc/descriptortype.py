@@ -20,9 +20,7 @@ descriptors.append(xfeatures2d.DAISY_create())
 descriptors.append(xfeatures2d.FREAK_create())
 descriptors.append(xfeatures2d.LATCH_create())
 descriptors.append(xfeatures2d.LUCID_create(1 ,1))
-descriptors.append(xfeatures2d.SIFT_create())
-descriptors.append(xfeatures2d.SURF_create())
 
 for descriptor in descriptors:
-    kps, des = descriptor.compute(img, points)
+    des = descriptor.compute(img, points)[1]
     print("Algorithm: {}, size: {}, type: {}".format(descriptor, des[0].size, des[0].dtype))

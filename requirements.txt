@@ -1,1 +1,5 @@
-opencv-contrib-python==3.4.0.12
+seaborn
+pandas
+numpy
+matplotlib
+opencv-contrib-python
